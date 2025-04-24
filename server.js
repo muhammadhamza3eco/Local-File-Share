@@ -435,18 +435,23 @@ const upload = multer({
 
                 // Ensure the target directory exists within the user's private scope
                 fs.mkdir(absoluteDestDir, { recursive: true }, (err) => {
-                     if (err) {
-                         console.error("Error ensuring upload directory exists:", err);
-                         return cb(new Error("Failed to create upload directory."));
-                     }
-                     cb(null, absoluteDestDir); // Pass absolute path to multer
-                 });
+                    if (err) {
+                        console.error("Error ensuring upload directory exists:", err);
+                        return cb(new Error("Failed to create upload directory."));
+                    }
+                    
+                    // Log directory creation for debugging
+                    console.log(`Created/verified upload directory: ${absoluteDestDir}`);
+                    cb(null, absoluteDestDir); // Pass absolute path to multer
+                });
             } catch (err) {
-                 console.error("Error resolving upload destination:", err);
-                 return cb(new Error("Invalid upload destination path."));
+                console.error("Error resolving upload destination:", err);
+                return cb(new Error("Invalid upload destination path."));
             }
         },
         filename: function (req, file, cb) {
+            // Log filename for debugging
+            console.log(`Processing file upload: ${file.originalname}`);
             cb(null, file.originalname);
         }
     }),
@@ -628,28 +633,23 @@ app.get('/download', (req, res) => { // ensureAuthenticated applied via app.use
 
 // Route to handle file uploads
 // Apply ensureAuthenticated specifically here before multer runs
-app.post('/upload', ensureAuthenticated, async (req, res, next) => { // Make route async
+app.post('/upload', ensureAuthenticated, async (req, res, next) => {
     const username = req.session.user.username;
     const userPrivateDir = getUserScopedPath(username, 'private'); // Get user's private root
     const totalStorageLimit = 2 * 1024 * 1024 * 1024; // 2 GB in bytes
 
     try {
         const currentSize = await calculateDirectorySize(userPrivateDir);
-
-        // Temporarily use multer to parse the file size without saving
-        const tempUpload = multer({
-            limits: { fileSize: 50 * 1024 * 1024 }, // Keep the 50MB individual limit
-            storage: multer.memoryStorage() // Store in memory temporarily
-        }).single('fileToUpload');
-
-        tempUpload(req, res, async (err) => { // Make multer callback async
+        
+        // Use a single multer upload process instead of two steps
+        upload.single('fileToUpload')(req, res, async (err) => {
             if (err) {
                 // Handle multer errors (e.g., file too large)
                 if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
                     logActivity(req, `Upload failed: File exceeds 50MB limit.`);
                     return res.status(400).send('File exceeds the 50MB limit.');
                 }
-                console.error("Error during temporary upload:", err);
+                console.error("Error during file upload:", err);
                 return res.status(500).send('Error processing upload.');
             }
 
@@ -661,29 +661,27 @@ app.post('/upload', ensureAuthenticated, async (req, res, next) => { // Make rou
 
             // Check total storage limit
             if (currentSize + fileSize > totalStorageLimit) {
+                // If over limit, delete the uploaded file and return error
+                try {
+                    await fs.promises.unlink(req.file.path);
+                } catch (unlinkErr) {
+                    console.error("Error removing file after storage limit check:", unlinkErr);
+                }
+                
                 logActivity(req, `Upload failed: User ${username} exceeds 2GB storage limit.`);
                 return res.status(400).send('Upload failed: Account storage limit (2GB) exceeded.');
             }
 
-            // If limits are okay, proceed with the actual saving using the original 'upload' middleware
-            // We need to call the 'upload.single' middleware again, but this time it will save
-            upload.single('fileToUpload')(req, res, (saveErr) => {
-                if (saveErr) {
-                    // This shouldn't happen if tempUpload succeeded, but handle defensively
-                    console.error("Error during final file save:", saveErr);
-                    return res.status(500).send('Error saving uploaded file.');
-                }
+            // Get relative path for logging
+            const relativeUploadPath = req.body.currentDir ?
+                path.join(req.body.currentDir, req.file.originalname) :
+                req.file.originalname;
+                
+            logActivity(req, `Uploaded file: ${relativeUploadPath} (${formatFileSize(fileSize)})`);
 
-                // Get relative path for logging (using the now saved req.file)
-                const relativeUploadPath = req.body.currentDir ?
-                    path.join(req.body.currentDir, req.file.originalname) :
-                    req.file.originalname;
-                logActivity(req, `Uploaded file: ${relativeUploadPath} (${formatFileSize(fileSize)})`); // Log size
-
-                // Redirect back to the directory where the file was uploaded
-                const redirectDir = req.body.currentDir ? `/?dir=${encodeURIComponent(req.body.currentDir)}` : '/';
-                res.redirect(redirectDir);
-            });
+            // Redirect back to the directory where the file was uploaded
+            const redirectDir = req.body.currentDir ? `/?dir=${encodeURIComponent(req.body.currentDir)}` : '/';
+            res.redirect(redirectDir);
         });
 
     } catch (calcErr) {
