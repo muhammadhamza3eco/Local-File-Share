@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Share - <%= currentRelativeDir %></title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Add Roboto font (already included) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Add Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Removed Font Awesome -->
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><span class="material-icons">dns</span> File Share</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-link active"><span class="material-icons">folder</span> My Files</a>
+            <a href="/shared-public" class="sidebar-link"><span class="material-icons">share</span> Shared Publicly</a>
+            <a href="/activity-log" class="sidebar-link"><span class="material-icons">history</span> Activity Log</a>
+        </nav>
+        <div class="sidebar-footer">
+            <% if (typeof username !== 'undefined' && username) { %>
+                <div class="user-info-container"> <!-- Wrapper for info and settings -->
+                    <div class="user-info">
+                        <span><span class="material-icons">person</span> <strong><%= username %></strong></span>
+                        <% if (typeof userIp !== 'undefined' && userIp) { %>
+                            <span class="user-ip"><span class="material-icons">lan</span> <%= userIp %></span>
+                        <% } %>
+                    </div>
+                    <a href="/settings" class="settings-link icon-button" title="Settings">
+                        <span class="material-icons">settings</span>
+                    </a>
+                </div>
+                 <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
+                <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header-bar">
+            <h2><span class="material-icons">folder_open</span> My Files: /<%= currentRelativeDir %></h2>
+        </div>
+
+        <% if (parentDirLink) { %>
+            <a href="<%= parentDirLink %>" class="nav-link"><span class="material-icons">arrow_upward</span> Parent Directory</a>
+        <% } %>
+
+        <div class="action-buttons">
+            <button id="showUploadFormBtn" class="action-btn"><span class="material-icons">upload_file</span> Upload File</button>
+            <button id="showCreateFolderFormBtn" class="action-btn"><span class="material-icons">create_new_folder</span> Create Folder</button>
+        </div>
+
+        <!-- Hidden Forms -->
+        <div id="uploadFormContainer" class="form-container" style="display: none;">
+             <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+                 <h3><span class="material-icons">upload_file</span> Upload File</h3>
+                 <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                 <div class="form-group">
+                     <input type="file" name="fileToUpload" id="fileToUpload" required>
+                     <label for="fileToUpload" class="file-input-label">Choose File</label>
+                     <span id="fileNameDisplay" class="file-name-display"></span> <!-- Added placeholder -->
+                 </div>
+                 <button type="submit"><span class="material-icons">check</span> Upload</button>
+                 <button type="button" class="cancel-btn" onclick="hideForm('uploadFormContainer')"><span class="material-icons">close</span> Cancel</button>
+             </form>
+        </div>
+
+        <div id="createFolderFormContainer" class="form-container" style="display: none;">
+             <form action="/create-folder" method="post" class="create-folder-form">
+                 <h3><span class="material-icons">create_new_folder</span> Create Folder</h3>
+                 <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                 <div class="form-group">
+                     <input type="text" name="folderName" placeholder="New folder name" required>
+                 </div>
+                 <button type="submit"><span class="material-icons">check</span> Create</button>
+                 <button type="button" class="cancel-btn" onclick="hideForm('createFolderFormContainer')"><span class="material-icons">close</span> Cancel</button>
+             </form>
+        </div>
+
+
+        <ul class="file-list">
+             <% files.forEach(file => { %>
+                 <li>
+                    <% if (file.isDirectory) { %>
+                        <span class="material-icons icon-folder">folder</span>
+                        <a href="/?dir=<%= encodeURIComponent(file.path) %>" class="item-link"><%= file.name %></a>
+                        <span class="item-details">
+                            <% if (file.mtime) { %>
+                                <span class="modified-date" title="<%= file.mtime.toISOString() %>"><%= file.mtime.toLocaleString() %></span>
+                            <% } %>
+                            <form action="/delete" method="post" class="delete-form">
+                                 <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                 <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                 <button type="submit" class="delete-button" title="Delete" onclick="return confirm('Are you sure you want to delete <%= file.name %>?');"><span class="material-icons">delete</span></button>
+                            </form>
+                        </span>
+                    <% } else { %>
+                        <div class="file-info-group">
+                            <span class="material-icons icon-file">description</span>
+                            <span class="file-name"><%= file.name %></span>
+                            <span class="file-size">(<%= formatFileSize(file.size) %>)</span>
+                        </div>
+                        <span class="item-details">
+                             <% if (file.mtime) { %>
+                                <span class="modified-date" title="<%= file.mtime.toISOString() %>"><%= file.mtime.toLocaleString() %></span>
+                             <% } %>
+                             <a href="/download?file=<%= encodeURIComponent(file.path) %>" class="download-link icon-button" title="Download"><span class="material-icons">download</span></a>
+                             <form action="/delete" method="post" class="delete-form">
+                                 <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                 <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                 <button type="submit" class="delete-button icon-button" title="Delete" onclick="return confirm('Are you sure you want to delete <%= file.name %>?');"><span class="material-icons">delete</span></button>
+                             </form>
+
+                             <% if (file.isPublic) { %>
+                                 <!-- Show Unshare Button -->
+                                 <form action="/unshare" method="post" class="unshare-form">
+                                     <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                     <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                     <button type="submit" class="unshare-button text-icon-button" title="Make Private (Currently Shared)"><span class="material-icons">lock_open</span> Shared</button> <!-- Reverted text, changed class -->
+                                 </form>
+                             <% } else { %>
+                                 <!-- Show Share Button -->
+                                 <form action="/share" method="post" class="share-form">
+                                     <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                     <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                     <button type="submit" class="share-button text-icon-button" title="Share Publicly"><span class="material-icons">share</span> Share</button> <!-- Reverted text, changed class -->
+                                 </form>
+                             <% } %>
+                        </span>
+                    <% } %>
+                </li>
+            <% }); %>
+            <% if (files.length === 0) { %>
+                <li class="empty-dir"><em>This directory is empty.</em></li>
+            <% } %>
+        </ul>
+
+        <!-- Pagination Controls -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <div class="pagination-info">
+                Showing <%= (pagination.currentPage - 1) * pagination.itemsPerPage + 1 %> to
+                <%= Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) %>
+                of <%= pagination.totalItems %> items
+            </div>
+            <div class="pagination">
+                <% if (pagination.hasPrevPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/?dir=<%= encodeURIComponent(currentRelativeDir) %>&page=1">
+                            <span class="material-icons">first_page</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/?dir=<%= encodeURIComponent(currentRelativeDir) %>&page=<%= pagination.currentPage - 1 %>">
+                            <span class="material-icons">chevron_left</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">first_page</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_left</span></span>
+                    </div>
+                <% } %>
+
+                <%
+                let startPage = Math.max(1, pagination.currentPage - 2);
+                let endPage = Math.min(pagination.totalPages, startPage + 4);
+                
+                if (endPage - startPage < 4 && pagination.totalPages > 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) { %>
+                    <div class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="/?dir=<%= encodeURIComponent(currentRelativeDir) %>&page=<%= i %>"><%= i %></a>
+                    </div>
+                <% } %>
+
+                <% if (pagination.hasNextPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/?dir=<%= encodeURIComponent(currentRelativeDir) %>&page=<%= pagination.currentPage + 1 %>">
+                            <span class="material-icons">chevron_right</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/?dir=<%= encodeURIComponent(currentRelativeDir) %>&page=<%= pagination.totalPages %>">
+                            <span class="material-icons">last_page</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_right</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">last_page</span></span>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+
+        <!-- Removed forms from here -->
+
+    </div> <!-- Close main-content div -->
+
+    <script src="/script.js"></script> <!-- Add script include -->
+</body>
+</html>

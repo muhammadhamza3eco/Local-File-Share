@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Public Files</title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Add Roboto font (already included) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Add Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Removed Font Awesome -->
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><span class="material-icons">dns</span> File Share</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-link"><span class="material-icons">folder</span> My Files</a>
+            <a href="/shared-public" class="sidebar-link active"><span class="material-icons">share</span> Shared Publicly</a>
+            <a href="/activity-log" class="sidebar-link"><span class="material-icons">history</span> Activity Log</a>
+        </nav>
+        <div class="sidebar-footer">
+             <div class="user-info-container"> <!-- Wrapper for info and settings -->
+                <div class="user-info">
+                    <span title="Username"><span class="material-icons">person</span> <strong><%= username %></strong></span>
+                    <span title="IP Address"><span class="material-icons">lan</span> <%= userIp %></span>
+                </div>
+                 <a href="/settings" class="settings-link icon-button" title="Settings">
+                    <span class="material-icons">settings</span>
+                </a>
+            </div>
+             <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
+            <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-bar">
+            <h2><span class="material-icons">share</span> Publicly Shared Files</h2>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search files..." onkeyup="filterFiles()">
+        </div>
+        
+        <ul class="file-list" id="fileList">
+            <% if (files.length > 0) { %>
+                <% files.forEach(file => { %>
+                    <li>
+                        <div class="file-info-group">
+                             <span class="material-icons icon-file">description</span>
+                             <span class="file-name"><%= file.name %></span>
+                             <span class="file-size">(<%= formatFileSize(file.size) %>)</span>
+                        </div>
+                        <span class="item-details">
+                            <span class="file-owner"><span class="material-icons">person</span> Shared by: <strong><%= file.owner %></strong></span>
+                            <span class="modified-date" title="<%= file.mtime.toISOString() %>"><%= file.mtime.toLocaleString() %></span>
+                            <a href="/public/<%= file.owner %>/<%= file.path %>" class="download-link icon-button" title="Download"><span class="material-icons">download</span></a>
+                        </span>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li class="empty-dir"><em>No shared files available.</em></li>
+            <% } %>
+        </ul>
+        
+        <!-- Pagination Controls -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <div class="pagination-info">
+                Showing <%= (pagination.currentPage - 1) * pagination.itemsPerPage + 1 %> to
+                <%= Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) %>
+                of <%= pagination.totalItems %> items
+            </div>
+            <div class="pagination">
+                <% if (pagination.hasPrevPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/shared-public?page=1">
+                            <span class="material-icons">first_page</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/shared-public?page=<%= pagination.currentPage - 1 %>">
+                            <span class="material-icons">chevron_left</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">first_page</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_left</span></span>
+                    </div>
+                <% } %>
+
+                <%
+                let startPage = Math.max(1, pagination.currentPage - 2);
+                let endPage = Math.min(pagination.totalPages, startPage + 4);
+                
+                if (endPage - startPage < 4 && pagination.totalPages > 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) { %>
+                    <div class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="/shared-public?page=<%= i %>"><%= i %></a>
+                    </div>
+                <% } %>
+
+                <% if (pagination.hasNextPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/shared-public?page=<%= pagination.currentPage + 1 %>">
+                            <span class="material-icons">chevron_right</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/shared-public?page=<%= pagination.totalPages %>">
+                            <span class="material-icons">last_page</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_right</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">last_page</span></span>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+    
+    <script>
+        function filterFiles() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const fileList = document.getElementById('fileList');
+            const items = fileList.getElementsByTagName('li');
+            
+            let hasVisibleItems = false;
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const text = item.textContent || item.innerText;
+                
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    item.style.display = "";
+                    hasVisibleItems = true;
+                } else {
+                    item.style.display = "none";
+                }
+            }
+            
+            // Show message if no items match the filter
+            if (!hasVisibleItems && items.length > 0 && !document.getElementById('noMatchMessage')) {
+                const noMatch = document.createElement('li');
+                noMatch.id = 'noMatchMessage';
+                noMatch.className = 'empty-dir';
+                noMatch.innerHTML = '<em>No matching files found.</em>';
+                fileList.appendChild(noMatch);
+            } else if (hasVisibleItems) {
+                const noMatch = document.getElementById('noMatchMessage');
+                if (noMatch) noMatch.remove();
+            }
+        }
+    </script>
+</body>
+</html>

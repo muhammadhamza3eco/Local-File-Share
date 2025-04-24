@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Pi File Share</title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Add Roboto font (already included) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Add Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Removed Font Awesome -->
+    <style>
+        body {
+            /* font-family is already set globally */
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1><span class="material-icons">login</span> Login</h1>
+            <p>Welcome back! Please login to your account</p>
+        </div>
+
+        <div class="auth-body">
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="error-message"><%= error %></p>
+            <% } %>
+
+            <form action="/login" method="post">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-with-icon">
+                        <span class="material-icons input-icon">person</span>
+                        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <span class="material-icons input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <span class="material-icons">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+
+                <button type="submit"><span class="material-icons">login</span> Login</button> <!-- Removed ripple class -->
+            </form>
+            
+            <p class="auth-switch">Don't have an account? <a href="/signup">Sign Up</a></p>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('.material-icons'); // Target span
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.textContent = 'visibility_off'; // Change icon name
+            } else {
+                passwordInput.type = 'password';
+                icon.textContent = 'visibility'; // Change icon name back
+            }
+        });
+    </script>
+</body>
+</html>

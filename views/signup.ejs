@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Pi File Share</title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Add Roboto font (already included) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Add Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Removed Font Awesome -->
+    <style>
+        body {
+            /* font-family is already set globally */
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1><span class="material-icons">person_add</span> Sign Up</h1>
+            <p>Create a new account to start sharing files</p>
+        </div>
+
+        <div class="auth-body">
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="error-message"><%= error %></p>
+            <% } %>
+
+            <form action="/signup" method="post">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-with-icon">
+                        <span class="material-icons input-icon">person</span>
+                        <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-with-icon">
+                        <span class="material-icons input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                        <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                            <span class="material-icons">visibility</span>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-meter"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-with-icon">
+                        <span class="material-icons input-icon">lock</span>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                        <button type="button" class="toggle-confirm-password" aria-label="Toggle password visibility">
+                            <span class="material-icons">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"><span class="material-icons">person_add</span> Create Account</button> <!-- Removed ripple class -->
+            </form>
+            
+            <p class="auth-switch">Already have an account? <a href="/login">Login</a></p>
+        </div>
+    </div>
+
+    <script src="/script.js"></script>
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('.material-icons'); // Target span
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.textContent = 'visibility_off'; // Change icon name
+            } else {
+                passwordInput.type = 'password';
+                icon.textContent = 'visibility'; // Change icon name back
+            }
+        });
+
+        // Toggle confirm password visibility
+        document.querySelector('.toggle-confirm-password').addEventListener('click', function() {
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const icon = this.querySelector('.material-icons'); // Target span
+
+            if (confirmPasswordInput.type === 'password') {
+                confirmPasswordInput.type = 'text';
+                icon.textContent = 'visibility_off'; // Change icon name
+            } else {
+                confirmPasswordInput.type = 'password';
+                icon.textContent = 'visibility'; // Change icon name back
+            }
+        });
+
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthMeter = document.querySelector('.password-strength-meter');
+            
+            // Remove existing classes
+            strengthMeter.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+            
+            if (password.length === 0) {
+                strengthMeter.style.width = '0';
+                return;
+            }
+            
+            // Simple password strength check
+            let strength = 0;
+            
+            // Length check
+            if (password.length >= 8) strength += 1;
+            
+            // Complexity checks
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+            
+            // Set the appropriate class based on strength
+            if (strength <= 2) {
+                strengthMeter.classList.add('strength-weak');
+            } else if (strength === 3) {
+                strengthMeter.classList.add('strength-medium');
+            } else {
+                strengthMeter.classList.add('strength-strong');
+            }
+        });
+
+        // Password match validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword === password) {
+                this.style.borderColor = '#43A047'; // Material Green
+            } else {
+                this.style.borderColor = '#b00020'; // Material Error
+            }
+        });
+    </script>
+</body>
+</html>

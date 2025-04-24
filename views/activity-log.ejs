@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log - <%= username %></title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Add Roboto font (already included) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <!-- Add Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Removed Font Awesome -->
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><span class="material-icons">dns</span> File Share</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/" class="sidebar-link"><span class="material-icons">folder</span> My Files</a>
+            <a href="/shared-public" class="sidebar-link"><span class="material-icons">share</span> Shared Publicly</a>
+            <a href="/activity-log" class="sidebar-link active"><span class="material-icons">history</span> Activity Log</a>
+        </nav>
+        <div class="sidebar-footer">
+             <div class="user-info-container"> <!-- Wrapper for info and settings -->
+                <div class="user-info">
+                    <span title="Username"><span class="material-icons">person</span> <strong><%= username %></strong></span>
+                    <span title="IP Address"><span class="material-icons">lan</span> <%= userIp %></span>
+                </div>
+                <a href="/settings" class="settings-link icon-button" title="Settings">
+                    <span class="material-icons">settings</span>
+                </a>
+            </div>
+             <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
+            <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="header-bar">
+            <h2><span class="material-icons">history</span> Activity Log</h2>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search logs..." onkeyup="filterLogs()">
+        </div>
+        
+        <div class="log-list" id="logContainer"> <!-- Changed class name -->
+            <% if (entries.length > 0) { %>
+                <% entries.forEach(function(entry) { %>
+                    <!-- Determine icon based on action -->
+                    <% let iconName = 'info'; %>
+                    <%
+                    const actionLower = entry.action.toLowerCase();
+                    if (actionLower.includes('upload')) {
+                        iconName = 'upload_file';
+                    } else if (actionLower.includes('download')) {
+                        iconName = 'download';
+                    } else if (actionLower.includes('delete')) {
+                        iconName = 'delete';
+                    } else if (actionLower.includes('share')) {
+                        iconName = 'share';
+                    } else if (actionLower.includes('unshare') || actionLower.includes('made private')) {
+                        iconName = 'lock';
+                    } else if (actionLower.includes('create') && actionLower.includes('folder')) {
+                        iconName = 'create_new_folder';
+                    } else if (actionLower.includes('login')) {
+                        iconName = 'login';
+                    } else if (actionLower.includes('logout')) {
+                        iconName = 'logout';
+                    } else if (actionLower.includes('signup')) {
+                        iconName = 'person_add';
+                    } else if (actionLower.includes('viewed')) {
+                        iconName = 'visibility';
+                    }
+                    %>
+
+                    <div class="log-entry card"> <!-- Added card class -->
+                        <div class="log-icon">
+                            <span class="material-icons <%= iconName %>"><%= iconName %></span>
+                        </div>
+                        <div class="log-details">
+                            <div class="log-action"><%= entry.action %></div>
+                            <div class="log-meta">
+                                <span class="log-time" title="<%= entry.timestamp.toISOString() %>"><%= entry.formattedTime %></span>
+                                <!-- Optionally display IP if needed, maybe hidden by default -->
+                                <!-- <span class="log-ip">IP: <%= entry.ip %></span> -->
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-log">No activity recorded yet.</div>
+            <% } %>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+            <div class="pagination-info">
+                Showing <%= (pagination.currentPage - 1) * pagination.itemsPerPage + 1 %> to
+                <%= Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) %>
+                of <%= pagination.totalItems %> entries
+            </div>
+            <div class="pagination">
+                <% if (pagination.hasPrevPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/activity-log?page=1">
+                            <span class="material-icons">first_page</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/activity-log?page=<%= pagination.currentPage - 1 %>">
+                            <span class="material-icons">chevron_left</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">first_page</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_left</span></span>
+                    </div>
+                <% } %>
+
+                <%
+                let startPage = Math.max(1, pagination.currentPage - 2);
+                let endPage = Math.min(pagination.totalPages, startPage + 4);
+                
+                if (endPage - startPage < 4 && pagination.totalPages > 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) { %>
+                    <div class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="/activity-log?page=<%= i %>"><%= i %></a>
+                    </div>
+                <% } %>
+
+                <% if (pagination.hasNextPage) { %>
+                    <div class="page-item">
+                        <a class="page-link" href="/activity-log?page=<%= pagination.currentPage + 1 %>">
+                            <span class="material-icons">chevron_right</span>
+                        </a>
+                    </div>
+                    <div class="page-item">
+                        <a class="page-link" href="/activity-log?page=<%= pagination.totalPages %>">
+                            <span class="material-icons">last_page</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">chevron_right</span></span>
+                    </div>
+                    <div class="page-item disabled">
+                        <span class="page-link"><span class="material-icons">last_page</span></span>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+    
+    <script>
+        function filterLogs() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const container = document.getElementById('logContainer');
+            const entries = container.getElementsByClassName('log-entry');
+            
+            let hasVisibleEntries = false;
+            
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i];
+                const text = entry.textContent || entry.innerText;
+                
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    entry.style.display = "";
+                    hasVisibleEntries = true;
+                } else {
+                    entry.style.display = "none";
+                }
+            }
+            
+            // Show message if no entries match the filter
+            if (!hasVisibleEntries && entries.length > 0) {
+                if (!document.getElementById('noMatchMessage')) {
+                    const noMatch = document.createElement('div');
+                    noMatch.id = 'noMatchMessage';
+                    noMatch.className = 'empty-log';
+                    noMatch.innerText = 'No matching entries found.';
+                    container.appendChild(noMatch);
+                }
+            } else {
+                const noMatch = document.getElementById('noMatchMessage');
+                if (noMatch) noMatch.remove();
+            }
+        }
+    </script>
+</body>
+</html>

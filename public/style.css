@@ -1,0 +1,1477 @@
+/* Material Design Colors - Greyish Dark Blue Palette */
+:root {
+    --md-primary: #2c3e50;
+    --md-primary-variant: #1a2530;
+    --md-secondary: #34495e;
+    --md-secondary-variant: #2c3e50;
+    --md-background: #f5f5f5;
+    --md-surface: #ffffff;
+    --md-error: #b71c1c;
+    --md-on-primary: #ffffff;
+    --md-on-secondary: #ffffff;
+    --md-on-background: #000000;
+    --md-on-surface: #000000;
+    --md-on-error: #ffffff;
+    --md-elevation-1: 0 2px 1px -1px rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 1px 3px 0 rgba(0,0,0,0.12);
+    --md-elevation-2: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12);
+    --md-elevation-4: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);
+    --md-elevation-8: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
+}
+
+body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--md-background);
+    color: rgba(0, 0, 0, 0.87);
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Material Design Sidebar Styles */
+.sidebar {
+    width: 256px;
+    background-color: var(--md-primary);
+    color: var(--md-on-primary);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    box-shadow: var(--md-elevation-8);
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: 16px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-header h1 {
+    font-size: 1.25rem;
+    margin: 0;
+    padding: 0;
+    color: var(--md-on-primary);
+    border: none;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    letter-spacing: 0.0125em;
+}
+
+.sidebar-header h1 .material-icons { /* Target Material Icons */
+    margin-right: 16px;
+    font-size: 1.5rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 8px 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.87);
+    text-decoration: none;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 1px 8px; /* Reduced vertical margin */
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.0178571429em;
+    /* height: 48px; Removed fixed height, rely on padding */
+}
+
+.sidebar-link .material-icons { /* Target Material Icons */
+    margin-right: 32px;
+    width: 24px;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-link.active {
+    background-color: rgba(255, 255, 255, 0.16);
+    color: var(--md-on-primary);
+}
+
+.sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-footer .user-info-container {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    justify-content: space-between; /* Space out info and button */
+    margin-bottom: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 8px 12px; /* Adjusted padding */
+    border-radius: 4px;
+}
+
+.sidebar-footer .user-info {
+    /* Removed margin-bottom, background, padding, border-radius */
+    font-size: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Slightly reduced gap */
+    flex-grow: 1; /* Allow info to take available space */
+}
+
+.sidebar-footer .user-info span {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.87);
+}
+
+.sidebar-footer .user-info span .material-icons { /* Target Material Icons */
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.1rem; /* Adjust size */
+}
+
+.sidebar-footer .user-info strong {
+    color: var(--md-on-primary);
+    font-weight: 500;
+}
+
+.sidebar-footer .user-info .user-ip {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar-footer .settings-link.icon-button {
+    color: rgba(255, 255, 255, 0.7); /* Lighter color for settings icon */
+    width: 36px; /* Slightly smaller */
+    height: 36px;
+    margin-left: 8px; /* Space between info and icon */
+}
+.sidebar-footer .settings-link.icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--md-on-primary);
+}
+.sidebar-footer .settings-link.icon-button .material-icons {
+    font-size: 1.25rem; /* Adjust icon size */
+}
+
+
+.sidebar-footer .logout-link {
+    background-color: var(--md-error);
+    color: var(--md-on-error);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.0892857143em;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--md-elevation-2);
+    text-decoration: none; /* Ensure no underline */
+}
+
+.sidebar-footer .logout-link:hover {
+    background-color: #a00000; /* Darker error color */
+    box-shadow: var(--md-elevation-4);
+    text-decoration: none;
+}
+
+.sidebar-footer .logout-link .material-icons { /* Target Material Icons */
+    margin-right: 8px;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: 256px; /* Adjusted for sidebar width */
+    padding: 24px; /* Standard padding */
+    max-width: calc(100% - 256px); /* Ensure it doesn't overlap */
+    width: calc(100% - 256px);
+    box-sizing: border-box;
+    background-color: var(--md-background); /* Use theme background */
+    min-height: 100vh;
+}
+
+/* Removed .container and .container:hover styles */
+
+h1, h2, h3 {
+    color: var(--md-on-background); /* Use theme text color */
+    margin-bottom: 0.8em;
+    font-weight: 400; /* Standard weight */
+}
+
+h1 {
+    font-size: 2.125rem; /* Material heading sizes */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12); /* Lighter border */
+    padding-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+h1 .material-icons { margin-right: 16px; }
+
+h2 {
+    font-size: 1.5rem;
+    color: var(--md-on-background);
+    display: flex;
+    align-items: center;
+}
+h2 .material-icons { margin-right: 12px; }
+
+h3 {
+    font-size: 1.25rem;
+    margin-top: 0;
+    color: var(--md-on-background);
+    display: flex;
+    align-items: center;
+}
+h3 .material-icons { margin-right: 8px; }
+
+
+a {
+    color: var(--md-primary); /* Use theme primary for links */
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: var(--md-primary-variant); /* Use theme primary variant */
+    text-decoration: underline;
+}
+
+.nav-link {
+    display: inline-flex; /* Use flex */
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.08); /* Subtle background */
+    border-radius: 4px;
+    color: var(--md-on-background);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+.nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+    text-decoration: none;
+}
+.nav-link .material-icons { margin-right: 8px; font-size: 1.25rem; }
+
+
+ul.file-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+li {
+    background-color: var(--md-surface); /* Use theme surface */
+    margin-bottom: 8px; /* Reduced margin */
+    padding: 12px 16px; /* Adjusted padding */
+    border: 1px solid rgba(0, 0, 0, 0.12); /* Standard border */
+    border-radius: 4px; /* Standard radius */
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out;
+    gap: 16px; /* Adjusted gap */
+}
+
+li:hover {
+    background-color: rgba(0, 0, 0, 0.04); /* Subtle hover */
+}
+
+li .material-icons { /* General icon style */
+    margin-right: 16px; /* Adjusted margin */
+    color: rgba(0, 0, 0, 0.54); /* Standard icon color */
+    font-size: 1.25rem; /* Standard icon size */
+}
+/* Removed specific icon color rules */
+
+/* New group for file icon, name, size */
+.file-info-group {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allow this group to take up space */
+    overflow: hidden; /* Prevent long names from breaking layout */
+    margin-right: 16px; /* Space between file info and details */
+}
+
+.file-name {
+    margin-right: 8px; /* Adjusted margin */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--md-on-surface); /* Use theme text color */
+    flex-shrink: 1; /* Allow shrinking */
+    min-width: 50px; /* Prevent extreme shrinking */
+}
+
+.file-size {
+    color: rgba(0, 0, 0, 0.6); /* Muted text color */
+    font-size: 0.875rem; /* Standard body2 size */
+    margin-left: 8px; /* Space between name and size */
+    white-space: nowrap;
+    flex-shrink: 0; /* Prevent size from shrinking */
+}
+
+.item-link { /* Class for the main folder/file link */
+    flex-grow: 1; /* Takes up available space */
+    margin-right: 16px; /* Space before details */
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long names */
+    color: var(--md-on-surface); /* Use theme text color */
+    text-decoration: none;
+}
+.item-link:hover {
+    color: var(--md-primary); /* Link hover color */
+    text-decoration: underline;
+}
+
+
+.item-details {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Adjusted space between date and actions */
+    flex-shrink: 0; /* Prevent details section from shrinking */
+}
+
+.modified-date {
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.6); /* Muted text color */
+    white-space: nowrap; /* Prevent date wrapping */
+}
+
+/* Base styles for icon buttons */
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px; /* Standard padding for icon buttons */
+    border-radius: 50%; /* Circular shape */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.54); /* Default icon color */
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    outline: none;
+    width: 40px; /* Fixed size */
+    height: 40px;
+    box-sizing: border-box;
+}
+.icon-button .material-icons {
+    font-size: 1.5rem; /* Standard icon size */
+    color: inherit; /* Inherit color from parent */
+    margin: 0; /* Remove margin if any */
+}
+.icon-button:hover {
+    background-color: rgba(0, 0, 0, 0.06); /* Subtle hover background */
+}
+.icon-button:active {
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker active background */
+}
+
+/* Specific icon button colors (Download/Delete only) */
+.download-link.icon-button { color: #4caf50; } /* Green for download */
+.delete-button.icon-button { color: var(--md-error); } /* Use theme error color */
+
+/* Specific hover adjustments for icon buttons */
+.download-link.icon-button:hover { background-color: rgba(76, 175, 80, 0.1); color: #388e3c; }
+.delete-button.icon-button:hover { background-color: rgba(183, 28, 28, 0.1); color: #a00000; }
+
+/* Styles for Text + Icon Buttons (Share/Unshare) */
+.text-icon-button {
+    padding: 6px 16px 6px 12px; /* Padding: top/bottom right left(icon) */
+    border-radius: 4px; /* Standard radius */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem; /* Standard button text size */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02857em;
+    outline: none;
+    min-height: 36px; /* Ensure min height */
+    box-sizing: border-box;
+}
+.text-icon-button .material-icons {
+    font-size: 1.25rem; /* Standard icon size */
+    margin-right: 8px; /* Space between icon and text */
+    color: inherit;
+}
+
+/* Share button specific styles */
+.share-button.text-icon-button {
+    color: var(--md-primary);
+}
+.share-button.text-icon-button:hover {
+    background-color: rgba(44, 62, 80, 0.08); /* Primary hover background */
+    color: var(--md-primary-variant);
+}
+
+/* Unshare button specific styles */
+.unshare-button.text-icon-button {
+    color: #4caf50; /* Green for "Shared" status */
+}
+.unshare-button.text-icon-button .material-icons {
+     color: #4caf50; /* Match icon color */
+}
+.unshare-button.text-icon-button:hover {
+    background-color: rgba(76, 175, 80, 0.08); /* Green hover background */
+    color: #388e3c; /* Darker green */
+}
+.unshare-button.text-icon-button:hover .material-icons {
+     color: #388e3c; /* Match icon color */
+}
+
+
+.delete-form {
+    /* Reset form styles for inline use */
+    background: none;
+    padding: 0;
+    border: none;
+    margin: 0;
+    flex: 0; /* Don't let the form grow */
+    min-width: auto;
+    display: inline-flex; /* Align button correctly */
+    align-items: center;
+}
+
+.empty-dir {
+    color: rgba(0, 0, 0, 0.6); /* Muted text color */
+    font-style: italic;
+    justify-content: center;
+    padding: 16px; /* Add some padding */
+    text-align: center;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12); /* Standard divider color */
+    margin: 24px 0; /* Adjusted margin */
+}
+
+/* Removed .action-forms */
+
+/* General Form Styling */
+form {
+    background-color: transparent; /* Remove background */
+    padding: 0; /* Remove padding */
+    border: none; /* Remove border */
+    flex: none; /* Remove flex */
+    min-width: auto; /* Remove min-width */
+    box-shadow: none; /* Remove shadow */
+    transition: none; /* Remove transition */
+}
+form:hover { /* Remove hover effect */
+    box-shadow: none;
+    transform: none;
+}
+
+
+.form-group {
+    margin-bottom: 16px; /* Standard margin */
+    position: relative;
+}
+
+input[type="text"], input[type="email"], input[type="search"], input[type="password"] { /* Added password */
+    width: 100%;
+    padding: 12px 16px; /* Adjusted padding */
+    border: 1px solid rgba(0, 0, 0, 0.23); /* Standard input border */
+    border-radius: 4px; /* Standard radius */
+    font-size: 1rem; /* Standard body1 size */
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    background-color: var(--md-surface); /* Ensure background */
+    color: var(--md-on-surface);
+}
+input[type="text"]:hover, input[type="email"]:hover, input[type="search"]:hover, input[type="password"]:hover {
+    border-color: rgba(0, 0, 0, 0.87); /* Darker border on hover */
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="search"]:focus, input[type="password"]:focus {
+    border-color: var(--md-primary); /* Theme primary on focus */
+    border-width: 2px; /* Thicker border on focus */
+    padding: 12px 15px; /* Adjust padding for thicker border */
+    box-shadow: none; /* Remove default shadow */
+    outline: none;
+}
+
+/* Style the file input button */
+input[type="file"] {
+    display: none;
+}
+
+.file-input-label {
+    display: inline-flex; /* Use flex for alignment */
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px; /* Adjust padding */
+    background-color: var(--md-secondary); /* Use theme secondary */
+    color: var(--md-on-secondary);
+    border-radius: 4px; /* Standard radius */
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease; /* Standard transitions */
+    font-weight: 500;
+    box-shadow: var(--md-elevation-1); /* Standard elevation */
+    text-transform: uppercase; /* Uppercase text */
+    font-size: 0.875rem;
+    line-height: 1.75;
+    min-width: 64px; /* Ensure minimum size */
+}
+
+.file-input-label:hover {
+    background-color: var(--md-secondary-variant); /* Use theme secondary variant */
+    box-shadow: var(--md-elevation-2);
+}
+
+.file-input-label:active {
+    box-shadow: var(--md-elevation-4); /* Slightly deeper shadow on active */
+}
+
+
+button:not(.toggle-password):not(.toggle-confirm-password) { /* Exclude toggle buttons */
+    /* General Button Styling (Submit/Create/Upload) */
+    padding: 10px 16px;
+    background-color: var(--md-primary); /* Use theme primary */
+    color: var(--md-on-primary);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem; /* MUI standard */
+    font-weight: 500;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex; /* Use inline-flex */
+    align-items: center;
+    justify-content: center; /* Center content */
+    box-shadow: var(--md-elevation-2);
+    text-transform: uppercase;
+    line-height: 1.75;
+    min-width: 64px;
+}
+button:not(.toggle-password):not(.toggle-confirm-password) .material-icons { margin-right: 8px; } /* Space for icon */
+
+button:not(.toggle-password):not(.toggle-confirm-password):hover {
+    background-color: var(--md-primary-variant); /* Use theme primary variant */
+    box-shadow: var(--md-elevation-4);
+}
+
+button:not(.toggle-password):not(.toggle-confirm-password):active {
+    box-shadow: var(--md-elevation-8);
+}
+
+/* Styles for the top action buttons */
+.action-buttons {
+    margin-bottom: 24px; /* Standard margin */
+    display: flex;
+    gap: 16px; /* Standard gap */
+    flex-wrap: wrap;
+}
+
+/* .action-btn inherits from general button styles now */
+.action-btn {
+     background-color: var(--md-secondary); /* Override background */
+     color: var(--md-on-secondary); /* Override text color */
+}
+/* .action-btn .material-icons { margin-right: 8px; } Already covered */
+
+.action-btn:hover {
+    background-color: var(--md-secondary-variant); /* Override hover background */
+    /* box-shadow is handled by general button hover */
+}
+
+.action-btn:active {
+     /* box-shadow is handled by general button active */
+}
+
+/* Styles for the hidden form containers */
+.form-container {
+    background-color: var(--md-surface); /* Use theme surface */
+    padding: 16px; /* Adjusted padding */
+    border: 1px solid rgba(0, 0, 0, 0.12); /* Standard border */
+    border-radius: 4px; /* Standard radius */
+    margin-top: 16px;
+    margin-bottom: 24px;
+    box-shadow: var(--md-elevation-1); /* Add slight elevation */
+}
+
+.form-container form {
+    /* Reset specific styles inherited from .action-forms if needed */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex; /* Align items in the form */
+    flex-wrap: wrap;
+    gap: 16px; /* Standard gap */
+    align-items: center;
+}
+
+.form-container h3 {
+    width: 100%; /* Make heading take full width */
+    margin-bottom: 16px;
+    font-size: 1.125rem; /* Slightly smaller heading */
+}
+
+.form-container .form-group {
+    flex-grow: 1; /* Allow input group to take space */
+    margin-bottom: 0; /* Remove bottom margin as gap is used */
+}
+
+.form-container button {
+    margin-top: 0; /* Align buttons with inputs */
+}
+
+.cancel-btn {
+    background-color: rgba(0, 0, 0, 0.12); /* Lighter grey for cancel */
+    color: rgba(0, 0, 0, 0.87); /* Ensure text is readable */
+    box-shadow: none; /* No shadow for cancel */
+}
+.cancel-btn:hover {
+    background-color: rgba(0, 0, 0, 0.20); /* Darker grey on hover */
+    box-shadow: none;
+}
+.cancel-btn:active {
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: none;
+}
+
+/* Remove the old flex layout for action-forms if it exists */
+.action-forms {
+    display: none; /* Hide the old container */
+}
+/* --- Responsive Design --- */
+
+@media (max-width: 960px) { /* Adjust breakpoint for sidebar collapse */
+     .main-content {
+        margin-left: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 16px; /* Adjust padding */
+    }
+     .sidebar {
+        /* Consider making sidebar collapsible/drawer on smaller screens */
+        /* For now, just hide it */
+         display: none;
+     }
+     /* Add styles for a potential menu button to toggle sidebar */
+}
+
+
+@media (max-width: 768px) {
+    /* .container styles removed */
+
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+
+    .action-buttons {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .action-btn, button:not(.toggle-password):not(.toggle-confirm-password), .file-input-label {
+        padding: 8px 12px;
+        font-size: 0.8125rem; /* Smaller font */
+    }
+
+
+    li {
+        padding: 10px 12px;
+        flex-wrap: wrap; /* Allow wrapping within list items */
+        gap: 8px; /* Small gap when wrapped */
+    }
+
+    .item-link {
+        margin-right: 8px;
+        flex-basis: 100%; /* Let link take full width initially */
+        order: 1; /* Ensure link comes first */
+    }
+
+    .item-details {
+        flex-basis: 100%; /* Take full width when wrapped */
+        justify-content: flex-end; /* Align actions to the right */
+        margin-left: 0; /* Remove auto margin */
+        gap: 12px; /* Adjust gap */
+        order: 2; /* Ensure details come after link */
+        padding-left: 36px; /* Indent details below icon (icon width + margin) */
+    }
+
+     .modified-date {
+        font-size: 0.75rem; /* Smaller date */
+        flex-grow: 1; /* Allow date to take space */
+        text-align: left;
+    }
+
+    .download-link, .delete-button {
+        font-size: 1.25rem; /* Slightly larger tap targets for icons */
+    }
+    .download-link .material-icons,
+    .delete-button .material-icons {
+        font-size: inherit; /* Ensure icon size matches button */
+    }
+
+
+    .form-container form {
+        flex-direction: column; /* Stack form elements */
+        align-items: stretch; /* Stretch elements */
+    }
+
+    .form-container .form-group {
+        width: 100%; /* Make input group take full width */
+    }
+
+     .form-container button {
+        width: 100%; /* Make buttons full width */
+        justify-content: center; /* Center button text/icon */
+        margin-top: 8px; /* Add margin */
+    }
+     .form-container .file-input-label {
+        display: flex; /* Make label block */
+        text-align: center;
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 480px) {
+     h1 { font-size: 1.5rem; }
+     h2 { font-size: 1.1rem; }
+
+     .item-details {
+         padding-left: 32px; /* Further adjust indent */
+         gap: 8px;
+     }
+
+     .modified-date {
+         /* Optionally hide date on very small screens if too cluttered */
+         /* display: none; */
+     }
+     .download-link, .delete-button {
+        font-size: 1.35rem; /* Even larger tap targets */
+    }
+}
+/* --- Material Design Auth Page Styles --- */
+
+/* (Removed redundant :root definition and related auth styles) */
+
+.auth-container {
+    max-width: 400px; /* Slightly narrower */
+    margin: 40px auto; /* Reduced margin */
+    background-color: var(--md-surface); /* Use main theme surface */
+    border-radius: 4px; /* Standard radius */
+    box-shadow: var(--md-elevation-4);
+    overflow: hidden;
+    position: relative;
+}
+
+.auth-header {
+    background-color: var(--md-primary); /* Use main theme primary */
+    padding: 24px; /* Adjusted padding */
+    text-align: center;
+    color: var(--md-on-primary); /* Use main theme on-primary */
+}
+
+.auth-header h1 {
+    text-align: center;
+    border-bottom: none;
+    margin: 0 0 8px 0; /* Added bottom margin */
+    padding: 0;
+    color: var(--md-on-primary); /* Use main theme on-primary */
+    font-size: 1.5rem; /* Adjusted size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+.auth-header h1 .material-icons { /* Target Material Icons */
+    font-size: 1.5rem; /* Match h1 size */
+    margin-right: 12px;
+}
+
+.auth-header p {
+    margin: 0;
+    opacity: 0.87;
+    font-size: 0.875rem; /* Standard body2 */
+}
+
+.auth-body {
+    padding: 24px; /* Adjusted padding */
+}
+
+.auth-container form {
+    background: none;
+    border: none;
+    padding: 0;
+    display: block;
+}
+
+.auth-container .form-group {
+    margin-bottom: 24px;
+    width: 100%;
+    position: relative;
+}
+
+.auth-container label {
+    display: block;
+    margin-bottom: 4px; /* Reduced margin */
+    font-weight: 400; /* Standard weight */
+    color: rgba(0, 0, 0, 0.6); /* Muted label color */
+    font-size: 0.75rem; /* Smaller label */
+}
+
+.auth-container .input-with-icon {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.auth-container .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(0, 0, 0, 0.54); /* Standard icon color */
+    font-size: 1.25rem; /* Standard icon size */
+    pointer-events: none; /* Ensures the icon doesn't interfere with input */
+}
+
+.auth-container .toggle-password,
+.auth-container .toggle-confirm-password {
+    position: absolute;
+    right: 0px; /* Align to edge */
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(0, 0, 0, 0.54); /* Standard icon color */
+    font-size: 1.25rem; /* Standard icon size */
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 8px; /* Increase tap area */
+    width: auto; /* Auto width */
+    height: auto; /* Auto height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    margin-right: 0; /* Remove margin */
+}
+
+.auth-container .toggle-password:hover,
+.auth-container .toggle-confirm-password:hover {
+    color: rgba(0, 0, 0, 0.87);
+}
+
+.auth-container input[type="text"],
+.auth-container input[type="password"],
+.auth-container input[type="email"] {
+    width: 100%;
+    padding: 10px 40px 10px 40px; /* Adjusted padding for icons */
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42); /* Standard input bottom border */
+    border-radius: 0;
+    font-size: 1rem; /* Standard body1 */
+    box-sizing: border-box;
+    transition: border-bottom-color 0.2s ease;
+    background-color: transparent;
+    color: var(--md-on-surface); /* Use main theme text color */
+}
+.auth-container input[type="text"]:hover,
+.auth-container input[type="password"]:hover,
+.auth-container input[type="email"]:hover {
+     border-bottom-color: rgba(0, 0, 0, 0.87);
+}
+
+
+.auth-container input:focus {
+    border-bottom-color: var(--md-primary); /* Use main theme primary for focus */
+    border-bottom-width: 2px; /* Thicker border */
+    padding-bottom: 9px; /* Adjust padding for thicker border */
+    box-shadow: none;
+    outline: none;
+}
+
+.auth-container input:focus ~ .input-icon { /* Use sibling selector */
+    color: var(--md-primary); /* Use main theme primary for focus */
+}
+
+.auth-container .remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.auth-container .remember-me input[type="checkbox"] {
+    margin-right: 8px;
+    /* Consider using MUI Checkbox styling later if possible */
+}
+.auth-container .remember-me label {
+    margin-bottom: 0; /* Align label with checkbox */
+    color: var(--md-on-surface);
+    opacity: 0.87;
+    font-size: 0.875rem; /* Standard body2 */
+}
+
+.auth-container button[type="submit"] { /* Target only submit button */
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px; /* MUI standard padding */
+    font-size: 0.875rem; /* MUI standard font size */
+    background-color: var(--md-primary); /* Use main theme primary */
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02857em; /* MUI standard letter spacing */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    box-shadow: var(--md-elevation-2);
+    color: var(--md-on-primary); /* Use main theme on-primary */
+    line-height: 1.75;
+    min-width: 64px;
+}
+
+.auth-container button[type="submit"]:hover {
+    background-color: var(--md-primary-variant); /* Use main theme primary variant */
+    box-shadow: var(--md-elevation-4);
+}
+
+.auth-container button[type="submit"]:active {
+    box-shadow: var(--md-elevation-8);
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 24px; /* Standard margin */
+    font-size: 0.875rem; /* Standard body2 */
+    color: rgba(0, 0, 0, 0.6); /* Slightly muted text */
+}
+
+.auth-switch a {
+    color: var(--md-primary); /* Use main theme primary */
+    font-weight: 500;
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    color: var(--md-primary-variant); /* Use main theme primary variant */
+    text-decoration: underline;
+}
+
+.error-message {
+    background-color: rgba(183, 28, 28, 0.08); /* Use main theme error color with alpha */
+    color: var(--md-error); /* Use main theme error */
+    border-left: 4px solid var(--md-error); /* Use main theme error */
+    padding: 12px 16px; /* Adjusted padding */
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 0.875rem; /* Standard body2 */
+}
+
+/* Password strength indicator - Adjusted colors */
+.password-strength {
+    height: 4px;
+    margin-top: 8px;
+    background-color: rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    width: 100%;
+    display: block;
+    clear: both;
+    position: relative;
+    border-radius: 2px; /* Slight rounding */
+}
+
+.password-strength-meter {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease; /* Added background transition */
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 2px;
+}
+
+.strength-weak {
+    width: 33%;
+    background-color: var(--md-error); /* Use main theme error */
+}
+
+.strength-medium {
+    width: 66%;
+    background-color: #ffa726; /* Material Orange 400 */
+}
+
+.strength-strong {
+    width: 100%;
+    background-color: #66bb6a; /* Material Green 400 */
+}
+
+/* Removed Ripple Effect CSS */
+/* Removed custom focus effect CSS */
+
+/* Responsive adjustments for auth pages */
+@media (max-width: 576px) {
+    .auth-container {
+        margin: 16px; /* Reduced margin */
+        border-radius: 4px;
+    }
+
+    .auth-header {
+        padding: 16px;
+    }
+
+    .auth-body {
+        padding: 16px;
+    }
+}
+/* --- Material Design Header Bar Styles --- */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 12px 16px; /* Adjusted padding */
+    border-radius: 4px;
+    background-color: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-elevation-2);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.header-bar h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 1.25rem; /* Standard h6 size */
+    color: var(--md-on-primary);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    letter-spacing: 0.0125em;
+}
+
+.header-bar h2 .material-icons { /* Target Material Icons */
+    margin-right: 16px;
+    font-size: 1.5rem; /* Slightly larger icon */
+}
+
+/* Removed duplicate .user-info styles */
+/* Removed duplicate .logout-link styles */
+/* Removed duplicate .activity-log-link styles */
+
+
+/* Responsive adjustments for header and sidebar */
+@media (max-width: 960px) { /* Adjusted breakpoint */
+    /* Sidebar hiding handled above */
+    .header-bar {
+        /* Allow header bar to remain */
+    }
+}
+
+@media (max-width: 768px) {
+    /* body flex-direction handled above */
+    /* sidebar styles handled above */
+    /* main-content margin handled above */
+
+    .header-bar {
+        flex-direction: column; /* Stack items */
+        align-items: flex-start; /* Align to start */
+        padding: 16px;
+    }
+
+    .header-bar h2 {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* sidebar-nav handled above */
+    /* sidebar-link handled above */
+}
+/* --- Share Button Styles --- */
+.share-form {
+    /* Reset form styles for inline use */
+    background: none;
+    padding: 0;
+    border: none;
+    margin: 0;
+    flex: 0; /* Don't let the form grow */
+    min-width: auto;
+    display: inline-flex; /* Align button correctly */
+    align-items: center;
+}
+
+/* Removed old text-button styles */
+
+/* Ensure icon buttons AND text-icon-buttons within item details have correct spacing */
+.item-details .icon-button,
+.item-details .text-icon-button {
+    margin: 0; /* Remove default margins if any */
+    padding: 8px; /* Consistent padding for actions in list */
+}
+/* Adjust padding specifically for text buttons in list */
+.item-details .text-icon-button {
+     padding: 6px 12px 6px 8px;
+}
+
+.item-details .delete-form,
+.item-details .share-form,
+.item-details .unshare-form {
+    line-height: 1; /* Prevent extra space from form */
+    margin: 0; /* Remove form margin */
+}
+
+
+.unshare-form, .share-form {
+    /* Reset form styles for inline use */
+    background: none;
+    padding: 0;
+    border: none;
+    margin: 0;
+    flex: 0; /* Don't let the form grow */
+    min-width: auto;
+    display: inline-flex; /* Align button correctly */
+    align-items: center;
+}
+
+/* Adjust gap in item-details if needed */
+.item-details {
+    gap: 12px; /* Slightly reduce gap to fit more icons */
+}
+
+/* File owner style for shared files */
+.file-owner {
+    color: var(--md-on-surface);
+    opacity: 0.87;
+    font-size: 0.875rem;
+    margin-right: 12px; /* Adjusted margin */
+    padding: 2px 6px;
+    background-color: rgba(0, 0, 0, 0.08); /* Subtle background */
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.file-owner .material-icons { /* Target Material Icons */
+    margin-right: 6px;
+    color: rgba(0, 0, 0, 0.54); /* Standard icon color */
+    font-size: 1.125rem; /* Adjust icon size */
+}
+
+/* --- File Name Display Style --- */
+.file-name-display {
+    margin-left: 10px;
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.6); /* Muted text */
+    font-size: 0.875rem;
+    /* Prevent long names from breaking layout badly */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; /* Adjust as needed */
+    display: inline-block; /* Needed for max-width and ellipsis */
+    vertical-align: middle; /* Align with button/label */
+}
+
+/* --- Activity Log Modern Styles --- */
+
+.log-list { /* Replaces .log-container */
+    margin-bottom: 20px;
+}
+
+.log-entry.card {
+    background-color: var(--md-surface);
+    border: 1px solid rgba(0, 0, 0, 0.12); /* Standard border */
+    border-radius: 4px;
+    padding: 12px 16px; /* Adjusted padding */
+    margin-bottom: 12px; /* Adjusted margin */
+    display: flex;
+    align-items: flex-start; /* Align icon to top */
+    gap: 16px;
+    box-shadow: var(--md-elevation-1); /* Add elevation */
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.log-entry.card:hover {
+    box-shadow: var(--md-elevation-2); /* Increase elevation on hover */
+}
+
+.log-icon { /* Container for the icon */
+     width: 24px; /* Standard icon container size */
+     text-align: center;
+     padding-top: 0; /* Remove padding */
+     margin-top: 2px; /* Align icon better */
+}
+.log-icon .material-icons { /* Target Material Icons */
+    font-size: 1.5rem; /* Standard icon size */
+    color: var(--md-secondary); /* Use theme secondary color as base */
+    display: inline-block; /* Ensure width is applied */
+    vertical-align: middle; /* Better vertical alignment */
+}
+
+/* Removed specific color overrides for log icons - rely on base color or context */
+
+
+.log-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.log-action {
+    font-weight: 500;
+    color: var(--md-on-surface);
+    margin-bottom: 4px; /* Reduced margin */
+    line-height: 1.5; /* Standard line height */
+}
+
+.log-meta {
+    font-size: 0.875rem; /* Standard body2 */
+    color: rgba(0, 0, 0, 0.6); /* Muted text */
+}
+
+.log-time { /* Already exists, maybe adjust */
+    display: inline-block; /* Keep on same line */
+    margin-right: 16px;
+}
+
+.log-ip { /* Style for IP if shown */
+    display: inline-block;
+    font-style: italic;
+}
+
+.search-container { /* Existing, maybe refine */
+     margin-bottom: 20px;
+     padding: 0; /* Remove padding */
+     background-color: transparent; /* Remove background */
+     border-radius: 0;
+     border: none; /* Remove border */
+}
+.search-input { /* Existing, maybe refine */
+     width: 100%;
+     padding: 10px 16px; /* Adjusted padding */
+     border: 1px solid rgba(0, 0, 0, 0.23); /* Standard border */
+     border-radius: 4px;
+     font-size: 1rem;
+     box-sizing: border-box;
+     background-color: var(--md-surface);
+     color: var(--md-on-surface);
+}
+.search-input:focus {
+    border-color: var(--md-primary);
+    border-width: 2px;
+    padding: 10px 15px; /* Adjust padding */
+    outline: 0;
+    box-shadow: none;
+}
+
+.empty-log { /* Existing, maybe refine */
+    padding: 24px; /* Adjusted padding */
+    text-align: center;
+    color: rgba(0, 0, 0, 0.6);
+    font-style: italic;
+    background-color: var(--md-surface);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+}
+
+/* Responsive adjustments for modern log */
+@media (max-width: 768px) {
+    .log-entry.card {
+        padding: 12px;
+        gap: 12px;
+    }
+    .log-icon {
+        width: 20px; /* Adjust width */
+    }
+     .log-icon .material-icons {
+        font-size: 1.25rem; /* Smaller icon */
+    }
+    .log-action {
+        font-size: 0.95rem;
+    }
+    .log-meta {
+        font-size: 0.8rem;
+    }
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0; /* Standard margin */
+    gap: 8px; /* Standard gap */
+}
+
+.pagination-info {
+    margin-bottom: 8px; /* Reduced margin */
+    text-align: center;
+    color: rgba(0, 0, 0, 0.6); /* Muted text */
+    font-size: 0.875rem; /* Standard body2 */
+}
+
+.page-item {
+    display: inline-block;
+}
+
+.page-link {
+    padding: 6px; /* Reduced padding for icon buttons */
+    border: 1px solid rgba(0, 0, 0, 0.12); /* Lighter border */
+    border-radius: 4px;
+    color: var(--md-primary); /* Use theme primary */
+    background-color: var(--md-surface); /* Use theme surface */
+    text-decoration: none;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Adjusted transition */
+    display: inline-flex; /* Align icon */
+    align-items: center;
+    justify-content: center;
+    min-width: 36px; /* Ensure minimum size */
+    min-height: 36px;
+    box-sizing: border-box;
+}
+/* Style for number links */
+.page-item:not(:has(.material-icons)) .page-link {
+    padding: 6px 12px; /* More padding for numbers */
+}
+
+.page-link .material-icons {
+    font-size: 1.5rem; /* Standard icon size */
+}
+
+
+.page-link:hover {
+    background-color: rgba(44, 62, 80, 0.04); /* Primary color hover (very subtle) */
+    text-decoration: none;
+    color: var(--md-primary-variant);
+}
+
+.page-item.active .page-link {
+    background-color: var(--md-primary); /* Use theme primary */
+    color: var(--md-on-primary);
+    border-color: var(--md-primary);
+    box-shadow: var(--md-elevation-1);
+}
+
+.page-item.disabled .page-link {
+    color: rgba(0, 0, 0, 0.38); /* Standard disabled color */
+    pointer-events: none;
+    background-color: transparent; /* Transparent background */
+    border-color: rgba(0, 0, 0, 0.12); /* Lighter border for disabled */
+}
+
+@media (max-width: 576px) {
+    .pagination {
+        flex-wrap: wrap;
+        gap: 4px; /* Smaller gap */
+    }
+
+    .page-link {
+        padding: 4px;
+        min-width: 32px;
+        min-height: 32px;
+        font-size: 0.875rem;
+    }
+     .page-item:not(:has(.material-icons)) .page-link {
+        padding: 4px 8px; /* More padding for numbers */
+    }
+     .page-link .material-icons {
+        font-size: 1.25rem; /* Smaller icons */
+    }
+}
+/* --- Settings Page Styles --- */
+
+.settings-section {
+    background-color: var(--md-surface);
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 4px;
+    box-shadow: var(--md-elevation-1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.settings-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    padding-bottom: 12px;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--md-on-surface);
+}
+.settings-section h3 .material-icons {
+    vertical-align: middle;
+    margin-right: 12px;
+    color: var(--md-primary);
+}
+
+.settings-form .form-group {
+    margin-bottom: 20px;
+}
+
+.settings-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 0.875rem;
+}
+
+.settings-form input[type="text"],
+.settings-form input[type="password"] {
+    /* Inherits general input styles, add specific overrides if needed */
+    max-width: 400px; /* Limit width for settings inputs */
+}
+.settings-form input[disabled] {
+    background-color: rgba(0, 0, 0, 0.05);
+    cursor: not-allowed;
+    border-color: rgba(0, 0, 0, 0.12);
+}
+
+
+.settings-form button {
+    /* Inherits general button styles */
+    margin-top: 10px;
+}
+
+/* Success/Error Messages */
+.success-message {
+    background-color: rgba(76, 175, 80, 0.1); /* Light green */
+    color: #388e3c; /* Darker green */
+    border-left: 4px solid #4caf50;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+/* Error message style already exists */
+/* --- Sidebar Time Display --- */
+.sidebar-time {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7); /* Lighter text color */
+    text-align: center;
+    margin-top: 12px; /* Space above the time */
+    margin-bottom: 8px; /* Space below the time */
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.1); /* Subtle background */
+    border-radius: 3px;
+}

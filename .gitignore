@@ -1,0 +1,27 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Logs
+logs/
+*.log
+user_logs/
+user_files/
+
+# User Data
+user_files/
+users.json # User credentials should not be committed
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor Files
+.vscode/
+.idea/
+
+# Environment Variables (if used in future)
+.env*
