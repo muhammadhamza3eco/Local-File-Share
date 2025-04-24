@@ -163,6 +163,51 @@ function getUserScopedPath(username, type = 'private', relativePath = '') {
 }
 // --- End Path Helper ---
 
+// --- Storage Calculation Helper ---
+async function calculateDirectorySize(directoryPath) {
+    let totalSize = 0;
+    try {
+        const entries = await fs.promises.readdir(directoryPath, { withFileTypes: true });
+        for (const entry of entries) {
+            const fullPath = path.join(directoryPath, entry.name);
+            if (entry.isDirectory()) {
+                totalSize += await calculateDirectorySize(fullPath); // Recurse into subdirectories
+            } else if (entry.isFile()) {
+                try {
+                    const stats = await fs.promises.stat(fullPath);
+                    totalSize += stats.size;
+                } catch (statErr) {
+                    console.error(`Error stating file ${fullPath} during size calculation:`, statErr);
+                    // Optionally skip file or handle error differently
+                }
+            }
+        }
+    } catch (err) {
+        // If directory doesn't exist or isn't readable, return 0 size
+        if (err.code !== 'ENOENT') {
+            console.error(`Error reading directory ${directoryPath} during size calculation:`, err);
+        }
+        return 0; // Return 0 if directory cannot be read
+    }
+    return totalSize;
+}
+// --- End Storage Calculation Helper ---
+
+// --- Formatting Helper ---
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    if (!bytes || bytes < 0) return ''; // Handle null/undefined/negative
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    // Handle potential edge case where bytes is very small but not 0
+    if (bytes < 1) return bytes.toFixed(2) + ' Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    // Ensure index doesn't go out of bounds for extremely large numbers
+    const index = Math.min(i, sizes.length - 1);
+    return parseFloat((bytes / Math.pow(k, index)).toFixed(2)) + ' ' + sizes[index];
+}
+// --- End Formatting Helper ---
+
 
 // --- Middleware Setup ---
 // IMPORTANT: Middleware order matters!
@@ -347,25 +392,28 @@ app.get('/public/:username/:filepath(*)', (req, res) => {
                 return res.status(500).send('Error accessing public file.');
             }
 
-            if (!stats.isFile()) {
-                // Don't allow listing public directories directly for simplicity/security
-                return res.status(403).send('Access denied.');
-            }
-
-            // Send the file for viewing/download
-            // Use res.sendFile for better content-type handling than res.download
-            res.sendFile(publicPath, (sendErr) => {
-                 if (sendErr) {
-                     console.error(`Error sending public file: ${publicPath}`, sendErr);
-                     // Avoid sending another response if headers already sent
-                     if (!res.headersSent) {
-                         res.status(500).send('Error sending file.');
+            // Allow access if the path points to a file that exists within the public scope
+            // This implicitly handles files directly in public/ or within subdirectories (shared folders)
+            if (stats.isFile()) {
+                // Send the file for viewing/download
+                // Use res.sendFile for better content-type handling than res.download
+                res.sendFile(publicPath, (sendErr) => {
+                     if (sendErr) {
+                         console.error(`Error sending public file: ${publicPath}`, sendErr);
+                         // Avoid sending another response if headers already sent
+                         if (!res.headersSent) {
+                             res.status(500).send('Error sending file.');
+                         }
+                     } else {
+                         // Optional: Log public access (could be noisy)
+                         // logActivity(req, `Accessed public file: User ${username}, File ${filepath}`);
                      }
-                 } else {
-                     // Optional: Log public access (could be noisy)
-                     // logActivity(req, `Accessed public file: User ${username}, File ${filepath}`);
-                 }
-            });
+                });
+            } else {
+                 // If it's not a file (e.g., a directory), deny access.
+                 // We don't want to list contents of shared folders directly via this route.
+                 return res.status(403).send('Access denied. Cannot list directory contents.');
+            }
         });
 
     } catch (err) { // Catch errors from getUserScopedPath
@@ -401,7 +449,10 @@ const upload = multer({
         filename: function (req, file, cb) {
             cb(null, file.originalname);
         }
-    })
+    }),
+    limits: {
+        fileSize: 50 * 1024 * 1024 // 50 MB limit in bytes
+    }
 });
 
 
@@ -418,6 +469,7 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
     const currentRelativeDir = req.query.dir || ''; // Relative to user's private root
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     const itemsPerPage = 10; // Number of items per page
+    const searchQuery = req.query.search || ''; // Get search query
 
     try { // Outer try for getUserScopedPath
         const currentDir = getUserScopedPath(username, 'private', currentRelativeDir);
@@ -441,15 +493,20 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
                 const relativeEntryPath = path.join(currentRelativeDir, entry.name);
 
                 let isPublic = false;
-                if (!entry.isDirectory()) {
-                    // Check if the corresponding file exists in the public directory
-                    try {
-                        const publicFilePath = getUserScopedPath(username, 'public', relativeEntryPath);
-                        isPublic = fs.existsSync(publicFilePath);
-                    } catch (publicPathError) {
-                        // Ignore errors checking public path (e.g., traversal attempts)
-                        console.warn(`Could not check public status for ${relativeEntryPath}: ${publicPathError.message}`);
+                // Check if the corresponding item exists in the public directory
+                try {
+                    const publicItemPath = getUserScopedPath(username, 'public', relativeEntryPath);
+                    // Check if the path exists in the public folder
+                    if (fs.existsSync(publicItemPath)) {
+                        // Verify if the type matches (file in public for private file, dir in public for private dir)
+                        const publicStats = fs.statSync(publicItemPath);
+                        if ((entry.isDirectory() && publicStats.isDirectory()) || (entry.isFile() && publicStats.isFile())) {
+                            isPublic = true;
+                        }
                     }
+                } catch (publicPathError) {
+                    // Ignore errors checking public path (e.g., traversal attempts)
+                    console.warn(`Could not check public status for ${relativeEntryPath}: ${publicPathError.message}`);
                 }
 
                 return {
@@ -475,15 +532,23 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
 
         const filesData = await Promise.all(filesDataPromises);
 
-        // Sort directories first, then files, alphabetically
-        filesData.sort((a, b) => {
+        // Filter files based on search query (if provided)
+        let filteredFilesData = filesData;
+        if (searchQuery) {
+            filteredFilesData = filesData.filter(file =>
+                file.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // Sort directories first, then files, alphabetically (using filtered data)
+        filteredFilesData.sort((a, b) => {
             if (a.isDirectory && !b.isDirectory) return -1;
             if (!a.isDirectory && b.isDirectory) return 1;
             return a.name.localeCompare(b.name);
         });
 
-        // Apply pagination
-        const paginatedData = paginateArray(filesData, page, itemsPerPage);
+        // Apply pagination (using filtered data)
+        const paginatedData = paginateArray(filteredFilesData, page, itemsPerPage);
 
         let parentDirLink = null;
         if (parentDir !== null && parentDir !== '.') {
@@ -492,15 +557,11 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
             parentDirLink = `/`;
         }
 
-        // Render the EJS template
-        // Function to format file size in a human-readable format
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+        // Calculate current storage usage
+        const userPrivateDir = getUserScopedPath(username, 'private');
+        const currentUsage = await calculateDirectorySize(userPrivateDir);
+        const storageLimit = 2 * 1024 * 1024 * 1024; // 2 GB
+
 
         res.render('index', {
             files: paginatedData.items,
@@ -510,7 +571,10 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
             username: req.session.user.username, // Pass username to view
             userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
             formatFileSize: formatFileSize, // Pass the format function to the view
-            appVersion: packageJson.version // Pass app version
+            appVersion: packageJson.version, // Pass app version
+            searchQuery: searchQuery, // Pass search query back to template
+            currentUsage: currentUsage, // Pass current usage
+            storageLimit: storageLimit // Pass storage limit
         });
     }); // End fs.readdir callback
     } catch (err) { // Catch errors from getUserScopedPath or other sync issues
@@ -564,20 +628,68 @@ app.get('/download', (req, res) => { // ensureAuthenticated applied via app.use
 
 // Route to handle file uploads
 // Apply ensureAuthenticated specifically here before multer runs
-app.post('/upload', ensureAuthenticated, upload.single('fileToUpload'), (req, res) => {
-    // 'fileToUpload' is the name attribute from the input type="file"
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
-    }
+app.post('/upload', ensureAuthenticated, async (req, res, next) => { // Make route async
+    const username = req.session.user.username;
+    const userPrivateDir = getUserScopedPath(username, 'private'); // Get user's private root
+    const totalStorageLimit = 2 * 1024 * 1024 * 1024; // 2 GB in bytes
 
-    // Get relative path for logging
-    const relativeUploadPath = req.body.currentDir ?
-        path.join(req.body.currentDir, req.file.originalname) :
-        req.file.originalname;
-    logActivity(req, `Uploaded file: ${relativeUploadPath}`);
-    // Redirect back to the directory where the file was uploaded
-    const redirectDir = req.body.currentDir ? `/?dir=${encodeURIComponent(req.body.currentDir)}` : '/';
-    res.redirect(redirectDir);
+    try {
+        const currentSize = await calculateDirectorySize(userPrivateDir);
+
+        // Temporarily use multer to parse the file size without saving
+        const tempUpload = multer({
+            limits: { fileSize: 50 * 1024 * 1024 }, // Keep the 50MB individual limit
+            storage: multer.memoryStorage() // Store in memory temporarily
+        }).single('fileToUpload');
+
+        tempUpload(req, res, async (err) => { // Make multer callback async
+            if (err) {
+                // Handle multer errors (e.g., file too large)
+                if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+                    logActivity(req, `Upload failed: File exceeds 50MB limit.`);
+                    return res.status(400).send('File exceeds the 50MB limit.');
+                }
+                console.error("Error during temporary upload:", err);
+                return res.status(500).send('Error processing upload.');
+            }
+
+            if (!req.file) {
+                return res.status(400).send('No file uploaded.');
+            }
+
+            const fileSize = req.file.size;
+
+            // Check total storage limit
+            if (currentSize + fileSize > totalStorageLimit) {
+                logActivity(req, `Upload failed: User ${username} exceeds 2GB storage limit.`);
+                return res.status(400).send('Upload failed: Account storage limit (2GB) exceeded.');
+            }
+
+            // If limits are okay, proceed with the actual saving using the original 'upload' middleware
+            // We need to call the 'upload.single' middleware again, but this time it will save
+            upload.single('fileToUpload')(req, res, (saveErr) => {
+                if (saveErr) {
+                    // This shouldn't happen if tempUpload succeeded, but handle defensively
+                    console.error("Error during final file save:", saveErr);
+                    return res.status(500).send('Error saving uploaded file.');
+                }
+
+                // Get relative path for logging (using the now saved req.file)
+                const relativeUploadPath = req.body.currentDir ?
+                    path.join(req.body.currentDir, req.file.originalname) :
+                    req.file.originalname;
+                logActivity(req, `Uploaded file: ${relativeUploadPath} (${formatFileSize(fileSize)})`); // Log size
+
+                // Redirect back to the directory where the file was uploaded
+                const redirectDir = req.body.currentDir ? `/?dir=${encodeURIComponent(req.body.currentDir)}` : '/';
+                res.redirect(redirectDir);
+            });
+        });
+
+    } catch (calcErr) {
+        console.error(`Error calculating storage size for user ${username}:`, calcErr);
+        res.status(500).send('Error checking storage limit.');
+    }
 });
 
 
@@ -847,13 +959,88 @@ app.post('/unshare', (req, res) => { // ensureAuthenticated applied via app.use
     }
 });
 
+// Route to handle sharing a FOLDER
+app.post('/share-folder', async (req, res) => {
+    const username = req.session.user.username;
+    const itemPathRelative = req.body.itemPath; // Relative path from private root
+    const currentRelativeDir = req.body.currentDir || '';
+
+    if (!itemPathRelative) {
+        return res.status(400).send('Folder path is required.');
+    }
+
+    try {
+        const privateFolderPath = getUserScopedPath(username, 'private', itemPathRelative);
+        const publicFolderPath = getUserScopedPath(username, 'public', itemPathRelative);
+
+        // Ensure the source is actually a directory
+        const stats = await fs.promises.stat(privateFolderPath);
+        if (!stats.isDirectory()) {
+            return res.status(400).send('Item to share is not a directory.');
+        }
+
+        // Ensure the parent directory exists in public
+        const publicParentDir = path.dirname(publicFolderPath);
+        await fs.promises.mkdir(publicParentDir, { recursive: true });
+
+        // Copy the directory recursively (mode 0o2775 might be needed for permissions)
+        await fs.promises.cp(privateFolderPath, publicFolderPath, { recursive: true });
+
+        logActivity(req, `Shared folder: ${itemPathRelative}`);
+        res.redirect(`/?dir=${encodeURIComponent(currentRelativeDir)}`);
+
+    } catch (err) {
+        console.error(`Error sharing folder ${itemPathRelative} for user ${username}:`, err);
+        res.status(err.message.includes("Invalid path") ? 400 : 500).send(err.message || 'Error sharing folder.');
+    }
+});
+
+// Route to handle unsharing a FOLDER
+app.post('/unshare-folder', async (req, res) => {
+    const username = req.session.user.username;
+    const itemPathRelative = req.body.itemPath; // Relative path from public root
+    const currentRelativeDir = req.body.currentDir || '';
+
+    if (!itemPathRelative) {
+        return res.status(400).send('Folder path is required.');
+    }
+
+    try {
+        const publicFolderPath = getUserScopedPath(username, 'public', itemPathRelative);
+
+        // Check if it exists in public before attempting removal
+        if (fs.existsSync(publicFolderPath)) {
+            const stats = await fs.promises.stat(publicFolderPath);
+            if (!stats.isDirectory()) {
+                // Should not happen if logic is correct, but good to check
+                return res.status(400).send('Item to unshare is not a directory in the public space.');
+            }
+            // Remove the directory recursively from public
+            await fs.promises.rm(publicFolderPath, { recursive: true, force: true }); // force handles non-empty dirs
+            logActivity(req, `Unshared folder: ${itemPathRelative}`);
+        } else {
+            logActivity(req, `Attempted to unshare non-existent public folder: ${itemPathRelative}`);
+        }
+
+        res.redirect(`/?dir=${encodeURIComponent(currentRelativeDir)}`);
+
+    } catch (err) {
+        console.error(`Error unsharing folder ${itemPathRelative} for user ${username}:`, err);
+        res.status(err.message.includes("Invalid path") ? 400 : 500).send(err.message || 'Error unsharing folder.');
+    }
+});
+
 // Route to view user's activity log
-app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.use
+app.get('/activity-log', async (req, res) => { // Make route async, ensureAuthenticated applied via app.use
     const username = req.session.user.username;
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     const itemsPerPage = 15; // Number of items per page
 
     try {
+        // Calculate storage usage
+        const userPrivateDir = getUserScopedPath(username, 'private');
+        const currentUsage = await calculateDirectorySize(userPrivateDir);
+        const storageLimit = 2 * 1024 * 1024 * 1024; // 2 GB
         const userLogPath = path.join(__dirname, 'user_logs', `${username}.log`);
 
         // Check if the log file exists
@@ -863,7 +1050,10 @@ app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.
                 userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
                 entries: [],
                 pagination: null, // Pass null pagination if no entries
-                appVersion: packageJson.version // Pass app version
+                appVersion: packageJson.version, // Pass app version
+                currentUsage: currentUsage, // Pass current usage
+                storageLimit: storageLimit, // Pass storage limit
+                formatFileSize: formatFileSize // Pass formatting function
             });
         }
 
@@ -918,7 +1108,10 @@ app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.
                 userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
                 entries: paginatedData.items,
                 pagination: paginatedData.pagination,
-                appVersion: packageJson.version // Pass app version
+                appVersion: packageJson.version, // Pass app version
+                currentUsage: currentUsage, // Pass current usage
+                storageLimit: storageLimit, // Pass storage limit
+                formatFileSize: formatFileSize // Pass formatting function
             });
 
             // Log this activity
@@ -931,11 +1124,16 @@ app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.
 });
 
 // Route to view all publicly shared files
-app.get('/shared-public', (req, res) => { // ensureAuthenticated applied via app.use
+app.get('/shared-public', async (req, res) => { // Make route async, ensureAuthenticated applied via app.use
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     const itemsPerPage = 10; // Number of items per page
+    const loggedInUsername = req.session.user.username; // Get logged-in user
 
     try {
+        // Calculate storage usage for the logged-in user
+        const userPrivateDir = getUserScopedPath(loggedInUsername, 'private');
+        const currentUsage = await calculateDirectorySize(userPrivateDir);
+        const storageLimit = 2 * 1024 * 1024 * 1024; // 2 GB
         // Get all users
         const usernames = Object.keys(users);
         const allPublicFiles = [];
@@ -951,32 +1149,52 @@ app.get('/shared-public', (req, res) => { // ensureAuthenticated applied via app
                 }
 
                 // Function to recursively get all files in a directory
-                const getFilesRecursively = (dir, basePath = '') => {
-                    const entries = fs.readdirSync(dir, { withFileTypes: true });
+                const getItemsRecursively = (dir, basePath = '') => { // Renamed function
+                    try { // Added try/catch around readdirSync
+                        const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-                    entries.forEach(entry => {
-                        const fullPath = path.join(dir, entry.name);
-                        const relativePath = path.join(basePath, entry.name).replace(/\\/g, '/'); // Ensure forward slashes
+                        entries.forEach(entry => {
+                            const fullPath = path.join(dir, entry.name);
+                            const relativePath = path.join(basePath, entry.name).replace(/\\/g, '/'); // Ensure forward slashes
 
-                        if (entry.isDirectory()) {
-                            // Recursively process subdirectories
-                            getFilesRecursively(fullPath, relativePath);
-                        } else {
-                            // Add file to the list
-                            const stats = fs.statSync(fullPath);
-                            allPublicFiles.push({
-                                name: entry.name,
-                                path: relativePath,
-                                owner: username,
-                                mtime: stats.mtime,
-                                size: stats.size
-                            });
+                            try { // Added try/catch around statSync
+                                const stats = fs.statSync(fullPath);
+                                if (entry.isDirectory()) {
+                                    // Add directory to the list
+                                    allPublicFiles.push({
+                                        name: entry.name,
+                                        path: relativePath,
+                                        owner: username,
+                                        mtime: stats.mtime,
+                                        isDirectory: true, // Add flag
+                                        size: 0 // Size not applicable
+                                    });
+                                    // Don't recurse further for this view, just list the top-level shared folder
+                                } else {
+                                    // Add file to the list
+                                    allPublicFiles.push({
+                                        name: entry.name,
+                                        path: relativePath,
+                                        owner: username,
+                                        mtime: stats.mtime,
+                                        isDirectory: false, // Add flag
+                                        size: stats.size
+                                    });
+                                }
+                            } catch (statErr) {
+                                console.error(`Error stating public item ${fullPath}:`, statErr);
+                            }
+                        });
+                    } catch (readErr) {
+                        // Ignore errors like EPERM or ENOENT if a public dir doesn't exist or isn't readable
+                        if (readErr.code !== 'ENOENT') {
+                             console.warn(`Error reading public directory ${dir}:`, readErr.code);
                         }
-                    });
+                    }
                 };
 
-                // Get all files in the user's public directory
-                getFilesRecursively(publicDir);
+                // Get all items (files and folders) in the user's public directory
+                getItemsRecursively(publicDir);
 
             } catch (err) {
                 console.error(`Error reading public directory for user ${username}:`, err);
@@ -987,29 +1205,33 @@ app.get('/shared-public', (req, res) => { // ensureAuthenticated applied via app
         // Filter out files owned by the current user
         const filteredPublicFiles = allPublicFiles.filter(file => file.owner !== req.session.user.username);
 
-        // Sort files by modification time (newest first)
-        filteredPublicFiles.sort((a, b) => b.mtime - a.mtime);
+
+        // Sort items: directories first, then files, then by name
+        filteredPublicFiles.sort((a, b) => {
+            if (a.isDirectory && !b.isDirectory) return -1;
+            if (!a.isDirectory && b.isDirectory) return 1;
+            return a.name.localeCompare(b.name);
+            // Alternative: Sort by modification time after type
+            // if (a.isDirectory === b.isDirectory) {
+            //     return b.mtime - a.mtime; // Newest first
+            // }
+            // return a.isDirectory ? -1 : 1;
+        });
 
         // Apply pagination
         const paginatedData = paginateArray(filteredPublicFiles, page, itemsPerPage);
 
-        // Function to format file size in a human-readable format
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
 
         // Render the shared files template
         res.render('shared-public', {
-            username: req.session.user.username,
+            username: loggedInUsername, // Use loggedInUsername
             userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
-            files: paginatedData.items, // Use the paginated list
+            items: paginatedData.items, // Renamed to items
             pagination: paginatedData.pagination,
             formatFileSize: formatFileSize, // Pass the format function to the view
-            appVersion: packageJson.version // Pass app version
+            appVersion: packageJson.version, // Pass app version
+            currentUsage: currentUsage, // Pass current usage
+            storageLimit: storageLimit // Pass storage limit
         });
 
         // Log this activity
@@ -1024,19 +1246,44 @@ app.get('/shared-public', (req, res) => { // ensureAuthenticated applied via app
 // --- Settings Routes ---
 
 // GET /settings - Display settings page
-app.get('/settings', (req, res) => { // ensureAuthenticated applied via app.use
+app.get('/settings', async (req, res) => { // Make route async, ensureAuthenticated applied via app.use
     const username = req.session.user.username;
     const userData = users[username] || {}; // Get user data, default to empty if somehow missing
 
-    res.render('settings', {
-        username: username,
-        userIp: req.ip || req.connection?.remoteAddress || 'unknown',
-        name: userData.name || '', // Pass current name
-        location: userData.location || '', // Pass current location
-        message: req.query.message, // For success messages after redirect
-        error: req.query.error, // For error messages after redirect
-        appVersion: packageJson.version // Pass app version
-    });
+    try {
+        // Calculate storage usage
+        const userPrivateDir = getUserScopedPath(username, 'private');
+        const currentUsage = await calculateDirectorySize(userPrivateDir);
+        const storageLimit = 2 * 1024 * 1024 * 1024; // 2 GB
+
+        res.render('settings', {
+            username: username,
+            userIp: req.ip || req.connection?.remoteAddress || 'unknown',
+            name: userData.name || '', // Pass current name
+            location: userData.location || '', // Pass current location
+            message: req.query.message, // For success messages after redirect
+            error: req.query.error, // For error messages after redirect
+            appVersion: packageJson.version, // Pass app version
+            currentUsage: currentUsage, // Pass current usage
+            storageLimit: storageLimit, // Pass storage limit
+            formatFileSize: formatFileSize // Pass formatting function
+        });
+    } catch (err) {
+        console.error(`Error in GET /settings handler for user ${username}:`, err);
+        // Render settings page with an error message if calculation fails
+        res.render('settings', {
+            username: username,
+            userIp: req.ip || req.connection?.remoteAddress || 'unknown',
+            name: userData.name || '',
+            location: userData.location || '',
+            message: null,
+            error: 'Could not retrieve storage usage information.',
+            appVersion: packageJson.version,
+            currentUsage: null, // Indicate usage couldn't be fetched
+            storageLimit: 2 * 1024 * 1024 * 1024, // Still pass the limit
+            formatFileSize: formatFileSize // Pass formatting function
+        });
+    }
 });
 
 // POST /update-profile - Handle profile information updates

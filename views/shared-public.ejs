@@ -12,57 +12,54 @@
     <!-- Removed Font Awesome -->
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1><span class="material-icons">dns</span> File Share <span class="app-version">v<%= appVersion %></span></h1>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/" class="sidebar-link"><span class="material-icons">folder</span> My Files</a>
-            <a href="/shared-public" class="sidebar-link active"><span class="material-icons">share</span> Shared Publicly</a>
-            <a href="/activity-log" class="sidebar-link"><span class="material-icons">history</span> Activity Log</a>
-        </nav>
-        <div class="sidebar-footer">
-             <div class="user-info-container"> <!-- Wrapper for info and settings -->
-                <div class="user-info">
-                    <span title="Username"><span class="material-icons">person</span> <strong><%= username %></strong></span>
-                    <span title="IP Address"><span class="material-icons">lan</span> <%= userIp %></span>
-                </div>
-                 <a href="/settings" class="settings-link icon-button" title="Settings">
-                    <span class="material-icons">settings</span>
-                </a>
-            </div>
-             <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
-            <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
-        </div>
-    </div>
+    <!-- Menu Toggle Button for Mobile -->
+    <button class="menu-toggle" id="menuToggleBtn" aria-label="Toggle menu">
+        <span class="material-icons">menu</span>
+    </button>
+    <%- include('partials/sidebar', { currentPage: 'shared-public' }) %>
     
     <div class="main-content">
         <div class="header-bar">
-            <h2><span class="material-icons">share</span> Publicly Shared Files</h2>
+            <h2><span class="material-icons">share</span> Publicly Shared Items</h2> <!-- Changed title -->
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search files..." onkeyup="filterFiles()">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search items..." onkeyup="filterItems()"> <!-- Changed placeholder and function name -->
         </div>
         
-        <ul class="file-list" id="fileList">
-            <% if (files.length > 0) { %>
-                <% files.forEach(file => { %>
+        <ul class="file-list" id="itemList"> <!-- Changed id -->
+            <% if (items.length > 0) { %> <!-- Changed variable name -->
+                <% items.forEach(item => { %> <!-- Changed variable name -->
                     <li>
-                        <div class="file-info-group">
-                             <span class="material-icons icon-file">description</span>
-                             <span class="file-name"><%= file.name %></span>
-                             <span class="file-size">(<%= formatFileSize(file.size) %>)</span>
-                        </div>
-                        <span class="item-details">
-                            <span class="file-owner"><span class="material-icons">person</span> Shared by: <strong><%= file.owner %></strong></span>
-                            <span class="modified-date" title="<%= file.mtime.toISOString() %>"><%= file.mtime.toLocaleString() %></span>
-                            <a href="/public/<%= file.owner %>/<%= file.path %>" class="download-link icon-button" title="Download"><span class="material-icons">download</span></a>
-                        </span>
+                        <% if (item.isDirectory) { %>
+                            <!-- Display Folder -->
+                            <div class="file-info-group">
+                                <span class="material-icons icon-folder">folder_shared</span> <!-- Folder icon -->
+                                <span class="file-name"><%= item.name %></span>
+                                <!-- Size not applicable for folders -->
+                            </div>
+                            <span class="item-details">
+                                <span class="file-owner"><span class="material-icons">person</span> Shared by: <strong><%= item.owner %></strong></span>
+                                <span class="modified-date" title="<%= item.mtime.toISOString() %>"><%= item.mtime.toLocaleString() %></span>
+                                <!-- No direct download for folders -->
+                            </span>
+                        <% } else { %>
+                            <!-- Display File -->
+                            <div class="file-info-group">
+                                <span class="material-icons icon-file">description</span>
+                                <span class="file-name"><%= item.name %></span>
+                                <span class="file-size">(<%= formatFileSize(item.size) %>)</span>
+                            </div>
+                            <span class="item-details">
+                                <span class="file-owner"><span class="material-icons">person</span> Shared by: <strong><%= item.owner %></strong></span>
+                                <span class="modified-date" title="<%= item.mtime.toISOString() %>"><%= item.mtime.toLocaleString() %></span>
+                                <a href="/public/<%= item.owner %>/<%= item.path %>" class="download-link icon-button" title="Download"><span class="material-icons">download</span></a>
+                            </span>
+                        <% } %>
                     </li>
                 <% }); %>
             <% } else { %>
-                <li class="empty-dir"><em>No shared files available.</em></li>
+                <li class="empty-dir"><em>No shared items available.</em></li> <!-- Changed text -->
             <% } %>
         </ul>
         
@@ -132,38 +129,61 @@
     </div>
     
     <script>
-        function filterFiles() {
+        function filterItems() { // Renamed function
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
-            const fileList = document.getElementById('fileList');
-            const items = fileList.getElementsByTagName('li');
+            const itemList = document.getElementById('itemList'); // Changed id
+            const listElements = itemList.getElementsByTagName('li'); // Changed variable name
             
             let hasVisibleItems = false;
             
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                const text = item.textContent || item.innerText;
+            for (let i = 0; i < listElements.length; i++) { // Changed variable name
+                const li = listElements[i]; // Changed variable name
+                // Ensure we don't try to filter the 'empty' message if it exists
+                if (li.classList.contains('empty-dir')) {
+                    li.style.display = "none"; // Hide empty message during filtering
+                    continue;
+                }
+                const text = li.textContent || li.innerText;
                 
                 if (text.toLowerCase().indexOf(filter) > -1) {
-                    item.style.display = "";
+                    li.style.display = "";
                     hasVisibleItems = true;
                 } else {
-                    item.style.display = "none";
+                    li.style.display = "none";
                 }
             }
             
             // Show message if no items match the filter
-            if (!hasVisibleItems && items.length > 0 && !document.getElementById('noMatchMessage')) {
-                const noMatch = document.createElement('li');
-                noMatch.id = 'noMatchMessage';
-                noMatch.className = 'empty-dir';
-                noMatch.innerHTML = '<em>No matching files found.</em>';
-                fileList.appendChild(noMatch);
-            } else if (hasVisibleItems) {
-                const noMatch = document.getElementById('noMatchMessage');
-                if (noMatch) noMatch.remove();
+            const noMatch = document.getElementById('noMatchMessage');
+            if (!hasVisibleItems && listElements.length > 0) {
+                if (!noMatch) { // Create message only if it doesn't exist
+                    const newNoMatch = document.createElement('li');
+                    newNoMatch.id = 'noMatchMessage';
+                    newNoMatch.className = 'empty-dir';
+                    newNoMatch.innerHTML = '<em>No matching items found.</em>'; // Changed text
+                    itemList.appendChild(newNoMatch);
+                } else {
+                    noMatch.style.display = ""; // Show existing message
+                }
+            } else if (noMatch) {
+                noMatch.style.display = "none"; // Hide message if items are found
             }
+
+            // If the list was initially empty, ensure the original empty message is hidden
+            const originalEmpty = itemList.querySelector('.empty-dir:not(#noMatchMessage)');
+            if (originalEmpty && filter) {
+                originalEmpty.style.display = 'none';
+            } else if (originalEmpty && !filter && listElements.length === 1 && listElements[0] === originalEmpty) {
+                // Show original empty message if filter is cleared and list was initially empty
+                originalEmpty.style.display = '';
+            }
+
         }
+
+        // Initial call in case the page loads with search params (though not implemented here)
+        // filterItems(); // Uncomment if you add server-side search query persistence for this page
     </script>
+    <script src="/script.js"></script> <!-- Add main script include -->
 </body>
 </html>

@@ -34,6 +34,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // --- Sidebar Toggle Functionality ---
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const body = document.body;
+    const sidebar = document.querySelector('.sidebar'); // Get sidebar element
+
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent click from immediately closing sidebar via body listener
+            body.classList.toggle('sidebar-open');
+        });
+    }
+
+    // Close sidebar if clicking outside of it (on the overlay)
+    // Use event capturing on the body to catch clicks early
+    body.addEventListener('click', (event) => {
+        // Check if the sidebar is open and the click was not on the sidebar itself or the toggle button
+        if (body.classList.contains('sidebar-open') && sidebar && !sidebar.contains(event.target) && event.target !== menuToggleBtn && !menuToggleBtn.contains(event.target)) {
+             body.classList.remove('sidebar-open');
+        }
+    }, true); // Use capturing phase
+
+    // Prevent clicks inside the sidebar from closing it (propagation stopped)
+    if (sidebar) {
+        sidebar.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+    // --- End Sidebar Toggle ---
+
 });
 
 // Function to hide forms (Keep this part)
@@ -70,3 +100,4 @@ function updateTime() {
 document.addEventListener('DOMContentLoaded', updateTime);
 // Update the time every second
 setInterval(updateTime, 1000);
+/* --- Sidebar Toggle Functionality (Moved into main DOMContentLoaded listener above) --- */

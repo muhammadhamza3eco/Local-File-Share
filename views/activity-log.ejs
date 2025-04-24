@@ -12,29 +12,11 @@
     <!-- Removed Font Awesome -->
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1><span class="material-icons">dns</span> File Share <span class="app-version">v<%= appVersion %></span></h1>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/" class="sidebar-link"><span class="material-icons">folder</span> My Files</a>
-            <a href="/shared-public" class="sidebar-link"><span class="material-icons">share</span> Shared Publicly</a>
-            <a href="/activity-log" class="sidebar-link active"><span class="material-icons">history</span> Activity Log</a>
-        </nav>
-        <div class="sidebar-footer">
-             <div class="user-info-container"> <!-- Wrapper for info and settings -->
-                <div class="user-info">
-                    <span title="Username"><span class="material-icons">person</span> <strong><%= username %></strong></span>
-                    <span title="IP Address"><span class="material-icons">lan</span> <%= userIp %></span>
-                </div>
-                <a href="/settings" class="settings-link icon-button" title="Settings">
-                    <span class="material-icons">settings</span>
-                </a>
-            </div>
-             <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
-            <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
-        </div>
-    </div>
+    <!-- Menu Toggle Button for Mobile -->
+    <button class="menu-toggle" id="menuToggleBtn" aria-label="Toggle menu">
+        <span class="material-icons">menu</span>
+    </button>
+    <%- include('partials/sidebar', { currentPage: 'activity-log' }) %>
     
     <div class="main-content">
         <div class="header-bar">
@@ -195,5 +177,6 @@
             }
         }
     </script>
+    <script src="/script.js"></script> <!-- Add main script include -->
 </body>
 </html>

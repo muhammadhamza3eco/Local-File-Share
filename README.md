@@ -6,14 +6,16 @@ A web-based file sharing application built with Node.js, Express, and EJS templa
 
 *   **User Authentication:** Secure signup and login using Argon2 password hashing.
 *   **File Management:**
-    *   Upload files to private directories.
+    *   Upload files to private directories (with limits: 50MB per file, 2GB total per account).
     *   Download private files.
     *   Create folders within private directories.
     *   Delete files and folders (including recursive deletion for folders).
+    *   Search files and folders within the current directory.
 *   **Public Sharing:**
     *   Share individual files publicly.
-    *   Unshare (make private) previously shared files.
-    *   View a list of all publicly shared files (excluding your own).
+    *   Share entire folders publicly.
+    *   Unshare (make private) previously shared files or folders.
+    *   View a list of all publicly shared files and folders (excluding your own).
 *   **Activity Logging:**
     *   Logs user actions (login, logout, signup, upload, download, delete, share, unshare, folder creation, log viewing) with timestamp, IP address, and username.
     *   Main activity log (`activity.log`).
@@ -55,6 +57,26 @@ A web-based file sharing application built with Node.js, Express, and EJS templa
     node server.js
     ```
 2.  **Access:** Open your web browser and navigate to `http://localhost:8080` (or the configured port if changed in `server.js`).
+
+## Running with PM2 (Process Manager)
+
+For more robust deployment and process management (like automatic restarts on crashes), you can use [PM2](https://pm2.keymetrics.io/).
+
+1.  **Install PM2 Globally:** If you don't have it installed:
+    ```bash
+    npm install pm2 -g
+    ```
+2.  **Start the Application with PM2:** From the project root directory:
+    ```bash
+    pm2 start server.js --name "file-share-app"
+    ```
+    *   `--name "file-share-app"` gives the process a recognizable name in PM2.
+3.  **Manage the Application:**
+    *   **List processes:** `pm2 list`
+    *   **View logs:** `pm2 logs file-share-app`
+    *   **Stop:** `pm2 stop file-share-app`
+    *   **Restart:** `pm2 restart file-share-app`
+    *   **Delete:** `pm2 delete file-share-app`
 
 ## File Structure
 

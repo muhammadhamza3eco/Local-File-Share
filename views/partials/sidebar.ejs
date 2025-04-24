@@ -1,0 +1,44 @@
+<!-- views/partials/sidebar.ejs -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1><span class="material-icons">dns</span> File Share <span class="app-version">v<%= typeof appVersion !== 'undefined' ? appVersion : '?.?.?' %></span></h1>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/" class="sidebar-link <%= (typeof currentPage !== 'undefined' && currentPage === 'index') ? 'active' : '' %>"><span class="material-icons">folder</span> My Files</a>
+        <a href="/shared-public" class="sidebar-link <%= (typeof currentPage !== 'undefined' && currentPage === 'shared-public') ? 'active' : '' %>"><span class="material-icons">share</span> Shared Publicly</a>
+        <a href="/activity-log" class="sidebar-link <%= (typeof currentPage !== 'undefined' && currentPage === 'activity-log') ? 'active' : '' %>"><span class="material-icons">history</span> Activity Log</a>
+    </nav>
+    <div class="sidebar-footer">
+        <% if (typeof username !== 'undefined' && username) { %>
+            <div class="user-info-container"> <!-- Wrapper for info and settings -->
+                <div class="user-info">
+                    <span><span class="material-icons">person</span> <strong><%= username %></strong></span>
+                    <% if (typeof userIp !== 'undefined' && userIp) { %>
+                        <span class="user-ip"><span class="material-icons">lan</span> <%= userIp %></span>
+                    <% } %>
+                </div>
+                <a href="/settings" class="settings-link icon-button <%= (typeof currentPage !== 'undefined' && currentPage === 'settings') ? 'active' : '' %>" title="Settings">
+                    <span class="material-icons">settings</span>
+                </a>
+            </div>
+
+            <!-- Storage Usage Display -->
+            <% if (typeof currentUsage !== 'undefined' && typeof storageLimit !== 'undefined' && currentUsage !== null && typeof formatFileSize === 'function') { %>
+                <% const usagePercent = Math.min(100, (currentUsage / storageLimit) * 100); %>
+                <div class="storage-info">
+                    <span class="storage-label"><span class="material-icons">storage</span> Storage Used:</span>
+                    <div class="storage-bar-container">
+                        <div class="storage-bar" style="width: <%= usagePercent.toFixed(1) %>%;"></div>
+                    </div>
+                    <span class="storage-text">
+                        <%= formatFileSize(currentUsage) %> / <%= formatFileSize(storageLimit) %> (<%= usagePercent.toFixed(1) %>%)
+                    </span>
+                </div>
+            <% } %>
+
+            <div id="current-time-display" class="sidebar-time"></div> <!-- Moved Time Display -->
+
+            <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
+        <% } %>
+    </div>
+</div>

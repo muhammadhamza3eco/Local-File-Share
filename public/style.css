@@ -1486,3 +1486,204 @@ button:not(.toggle-password):not(.toggle-confirm-password):active {
     padding: 1px 4px;
     border-radius: 3px;
 }
+/* --- Responsive Styles --- */
+
+/* Style for the menu toggle button (hamburger icon) */
+.menu-toggle {
+    display: none; /* Explicitly hide by default */
+    /* Position properties moved to media query */
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    box-shadow: var(--md-elevation-4);
+    align-items: center;
+    justify-content: center;
+}
+.menu-toggle .material-icons {
+    font-size: 1.75rem;
+}
+
+
+@media (max-width: 768px) {
+    /* Remove sidebar header padding adjustment - wasn't effective */
+    /* .sidebar-header {
+        padding-left: 60px;
+    } */
+    .sidebar {
+        transform: translateX(-100%); /* Hide sidebar off-screen */
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000; /* Sidebar slides OVER content, but UNDER toggle */
+    }
+
+    .main-content {
+        margin-left: 0; /* Remove the margin */
+        width: 100%;
+        max-width: 100%;
+        padding: 16px; /* Slightly reduce padding on mobile */
+        padding-top: 80px; /* Increased padding to ensure content clears the fixed button */
+    }
+
+    .menu-toggle {
+        display: inline-flex; /* Show the button on smaller screens */
+        position: fixed;      /* Apply positioning only when visible */
+        top: 16px;
+        left: 16px;
+        z-index: 1001;
+    }
+
+    /* Styles when the sidebar is toggled open */
+    body.sidebar-open .sidebar {
+        transform: translateX(0); /* Slide sidebar in */
+    }
+
+    /* Optional: Add an overlay to dim the main content when sidebar is open */
+    body.sidebar-open::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999; /* Below sidebar, above content */
+    }
+}
+
+/* Adjust list item padding on very small screens */
+@media (max-width: 480px) {
+    li {
+        padding: 10px 12px;
+        gap: 12px;
+    }
+    li .material-icons {
+        margin-right: 12px;
+    }
+    .item-details {
+        gap: 8px; /* Reduce gap in details */
+    }
+    .icon-button {
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+    }
+    .icon-button .material-icons {
+        font-size: 1.25rem;
+    }
+    .text-icon-button {
+        padding: 4px 10px 4px 8px;
+        min-height: 32px;
+    }
+     .text-icon-button .material-icons {
+        font-size: 1.1rem;
+        margin-right: 6px;
+    }
+    .main-content {
+        padding: 12px;
+        padding-top: 68px;
+    }
+    h1 { font-size: 1.75rem; padding-bottom: 12px; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+}
+/* --- Search Form Styles --- */
+.search-container {
+    margin-bottom: 20px; /* Space below search */
+    max-width: 500px; /* Limit width */
+}
+
+.search-form {
+    display: flex;
+}
+
+.search-group {
+    display: flex;
+    flex-grow: 1;
+    position: relative; /* For positioning the button */
+    margin-bottom: 0; /* Override default form-group margin */
+}
+
+#searchInput {
+    padding-right: 50px; /* Make space for the button inside */
+    border-radius: 4px; /* Consistent radius */
+}
+
+.search-button.icon-button {
+    position: absolute;
+    right: 4px; /* Position inside the input */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-primary); /* Use primary color */
+    width: 40px;
+    height: 40px;
+}
+.search-button.icon-button:hover {
+    background-color: rgba(44, 62, 80, 0.08); /* Primary hover */
+}
+/* --- Storage Usage Display Styles (Sidebar Footer) --- */
+.storage-info {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.storage-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+.storage-label .material-icons {
+    font-size: 1rem;
+    margin-right: 6px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.storage-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.storage-bar {
+    height: 100%;
+    background-color: #4CAF50; /* Green for usage */
+    border-radius: 4px;
+    transition: width 0.3s ease-in-out;
+}
+
+/* Change bar color if usage is high */
+.storage-bar[style*="width: 8"], /* Matches width starting with 8X.X% */
+.storage-bar[style*="width: 9"], /* Matches width starting with 9X.X% */
+.storage-bar[style*="width: 100"] /* Matches width 100% */
+{
+    background-color: #ff9800; /* Orange for high usage */
+}
+.storage-bar[style*="width: 95"],
+.storage-bar[style*="width: 96"],
+.storage-bar[style*="width: 97"],
+.storage-bar[style*="width: 98"],
+.storage-bar[style*="width: 99"],
+.storage-bar[style*="width: 100"]
+{
+     background-color: #f44336; /* Red for very high usage */
+}
+
+
+.storage-text {
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+}

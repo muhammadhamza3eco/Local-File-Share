@@ -12,32 +12,11 @@
     <!-- Removed Font Awesome -->
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1><span class="material-icons">dns</span> File Share <span class="app-version">v<%= appVersion %></span></h1>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/" class="sidebar-link active"><span class="material-icons">folder</span> My Files</a>
-            <a href="/shared-public" class="sidebar-link"><span class="material-icons">share</span> Shared Publicly</a>
-            <a href="/activity-log" class="sidebar-link"><span class="material-icons">history</span> Activity Log</a>
-        </nav>
-        <div class="sidebar-footer">
-            <% if (typeof username !== 'undefined' && username) { %>
-                <div class="user-info-container"> <!-- Wrapper for info and settings -->
-                    <div class="user-info">
-                        <span><span class="material-icons">person</span> <strong><%= username %></strong></span>
-                        <% if (typeof userIp !== 'undefined' && userIp) { %>
-                            <span class="user-ip"><span class="material-icons">lan</span> <%= userIp %></span>
-                        <% } %>
-                    </div>
-                    <a href="/settings" class="settings-link icon-button" title="Settings">
-                        <span class="material-icons">settings</span>
-                    </a>
-                </div>
-                 <div id="current-time-display" class="sidebar-time"></div> <!-- Added Time Display -->
-                <a href="/logout" class="logout-link"><span class="material-icons">logout</span> Logout</a>
-            <% } %>
-        </div>
+    <!-- Menu Toggle Button for Mobile -->
+    <button class="menu-toggle" id="menuToggleBtn" aria-label="Toggle menu">
+        <span class="material-icons">menu</span>
+    </button>
+    <%- include('partials/sidebar', { currentPage: 'index' }) %>
     </div>
 
     <div class="main-content">
@@ -52,6 +31,19 @@
         <div class="action-buttons">
             <button id="showUploadFormBtn" class="action-btn"><span class="material-icons">upload_file</span> Upload File</button>
             <button id="showCreateFolderFormBtn" class="action-btn"><span class="material-icons">create_new_folder</span> Create Folder</button>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-container">
+            <form action="/" method="get" class="search-form">
+                <input type="hidden" name="dir" value="<%= currentRelativeDir %>"> <!-- Keep current directory context -->
+                <div class="form-group search-group">
+                    <input type="search" name="search" id="searchInput" placeholder="Search files/folders..." value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+                    <button type="submit" class="search-button icon-button" title="Search">
+                        <span class="material-icons">search</span>
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Hidden Forms -->
@@ -92,11 +84,30 @@
                             <% if (file.mtime) { %>
                                 <span class="modified-date" title="<%= file.mtime.toISOString() %>"><%= file.mtime.toLocaleString() %></span>
                             <% } %>
+
+                            <!-- Delete Folder Button -->
                             <form action="/delete" method="post" class="delete-form">
                                  <input type="hidden" name="itemPath" value="<%= file.path %>">
                                  <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
-                                 <button type="submit" class="delete-button" title="Delete" onclick="return confirm('Are you sure you want to delete <%= file.name %>?');"><span class="material-icons">delete</span></button>
+                                 <button type="submit" class="delete-button icon-button" title="Delete" onclick="return confirm('Are you sure you want to delete folder <%= file.name %> and all its contents?');"><span class="material-icons">delete_forever</span></button> <!-- Changed icon and confirmation -->
                             </form>
+
+                            <!-- Share/Unshare Folder Buttons -->
+                            <% if (file.isPublic) { %>
+                                <!-- Show Unshare Button for Folder -->
+                                <form action="/unshare-folder" method="post" class="unshare-form">
+                                    <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                    <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                    <button type="submit" class="unshare-button text-icon-button" title="Make Folder Private (Currently Shared)"><span class="material-icons">lock_open</span> Shared</button>
+                                </form>
+                            <% } else { %>
+                                <!-- Show Share Button for Folder -->
+                                <form action="/share-folder" method="post" class="share-form">
+                                    <input type="hidden" name="itemPath" value="<%= file.path %>">
+                                    <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
+                                    <button type="submit" class="share-button text-icon-button" title="Share Folder Publicly"><span class="material-icons">folder_shared</span> Share</button>
+                                </form>
+                            <% } %>
                         </span>
                     <% } else { %>
                         <div class="file-info-group">
@@ -115,19 +126,20 @@
                                  <button type="submit" class="delete-button icon-button" title="Delete" onclick="return confirm('Are you sure you want to delete <%= file.name %>?');"><span class="material-icons">delete</span></button>
                              </form>
 
+                             <!-- Share/Unshare File Buttons -->
                              <% if (file.isPublic) { %>
-                                 <!-- Show Unshare Button -->
+                                 <!-- Show Unshare Button for File -->
                                  <form action="/unshare" method="post" class="unshare-form">
                                      <input type="hidden" name="itemPath" value="<%= file.path %>">
                                      <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
-                                     <button type="submit" class="unshare-button text-icon-button" title="Make Private (Currently Shared)"><span class="material-icons">lock_open</span> Shared</button> <!-- Reverted text, changed class -->
+                                     <button type="submit" class="unshare-button text-icon-button" title="Make File Private (Currently Shared)"><span class="material-icons">lock_open</span> Shared</button>
                                  </form>
                              <% } else { %>
-                                 <!-- Show Share Button -->
+                                 <!-- Show Share Button for File -->
                                  <form action="/share" method="post" class="share-form">
                                      <input type="hidden" name="itemPath" value="<%= file.path %>">
                                      <input type="hidden" name="currentDir" value="<%= currentRelativeDir %>">
-                                     <button type="submit" class="share-button text-icon-button" title="Share Publicly"><span class="material-icons">share</span> Share</button> <!-- Reverted text, changed class -->
+                                     <button type="submit" class="share-button text-icon-button" title="Share File Publicly"><span class="material-icons">share</span> Share</button>
                                  </form>
                              <% } %>
                         </span>
