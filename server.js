@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto'); // Added for salt generation
 const argon2 = require('argon2'); // Use the correct argon2 package
+const packageJson = require('./package.json'); // Read package.json
 
 const app = express();
 const port = 8080; // Changed port from 3001 due to EADDRINUSE error
@@ -508,7 +509,8 @@ app.get('/', async (req, res) => { // ensureAuthenticated applied via app.use
             parentDirLink: parentDirLink,
             username: req.session.user.username, // Pass username to view
             userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
-            formatFileSize: formatFileSize // Pass the format function to the view
+            formatFileSize: formatFileSize, // Pass the format function to the view
+            appVersion: packageJson.version // Pass app version
         });
     }); // End fs.readdir callback
     } catch (err) { // Catch errors from getUserScopedPath or other sync issues
@@ -860,7 +862,8 @@ app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.
                 username: username,
                 userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
                 entries: [],
-                pagination: null // Pass null pagination if no entries
+                pagination: null, // Pass null pagination if no entries
+                appVersion: packageJson.version // Pass app version
             });
         }
 
@@ -914,7 +917,8 @@ app.get('/activity-log', (req, res) => { // ensureAuthenticated applied via app.
                 username: username,
                 userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
                 entries: paginatedData.items,
-                pagination: paginatedData.pagination
+                pagination: paginatedData.pagination,
+                appVersion: packageJson.version // Pass app version
             });
 
             // Log this activity
@@ -1004,7 +1008,8 @@ app.get('/shared-public', (req, res) => { // ensureAuthenticated applied via app
             userIp: req.ip || req.connection?.remoteAddress || 'unknown', // Pass user IP
             files: paginatedData.items, // Use the paginated list
             pagination: paginatedData.pagination,
-            formatFileSize: formatFileSize // Pass the format function to the view
+            formatFileSize: formatFileSize, // Pass the format function to the view
+            appVersion: packageJson.version // Pass app version
         });
 
         // Log this activity
@@ -1029,7 +1034,8 @@ app.get('/settings', (req, res) => { // ensureAuthenticated applied via app.use
         name: userData.name || '', // Pass current name
         location: userData.location || '', // Pass current location
         message: req.query.message, // For success messages after redirect
-        error: req.query.error // For error messages after redirect
+        error: req.query.error, // For error messages after redirect
+        appVersion: packageJson.version // Pass app version
     });
 });
 
